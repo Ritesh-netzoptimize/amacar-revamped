@@ -4,19 +4,48 @@ import './videoSection.css'
 import vd from '../../assets/video_amacar.mp4'
 
 export default function VideoSection() {
+    // 🔹 Variants for animation
+    const textVariants = {
+        hidden: { opacity: 0, x: -50 },
+        visible: { opacity: 1, x: 0, transition: { duration: 0.8, ease: "easeOut" } }
+    }
+
+    const videoVariants = {
+        hidden: { opacity: 0, x: 50 },
+        visible: { opacity: 1, x: 0, transition: { duration: 0.8, ease: "easeOut", delay: 0.2 } }
+    }
 
     return (
         <section className="video-section">
-            <div className='left-text-section'>
-                <p className='left-text-heading title-accent'>Sell Your Car the Smarter Way</p>
-                <p className='left-text-content'>Skip the hassle of endless listings and lowball offers. With Amacar, dealers compete to buy your car, giving you the best price quickly, securely, and stress-free—cash in hand, without compromise.</p>
-            </div>
-            <div className='right-video-section'>
-                <video className='video-element' controls loop muted playsInline>
+            {/* Left Text Section */}
+            <motion.div
+                className="left-text-section"
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, amount: 0.3 }}
+                variants={textVariants}
+            >
+                <p className='left-text-heading title-accent'>
+                    Sell Your Car the Smarter Way
+                </p>
+                <p className='left-text-content'>
+                    Skip the hassle of endless listings and lowball offers. With Amacar, dealers compete to buy your car, giving you the best price quickly, securely, and stress-free—cash in hand, without compromise.
+                </p>
+            </motion.div>
+
+            {/* Right Video Section */}
+            <motion.div
+                className="right-video-section"
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, amount: 0.3 }}
+                variants={videoVariants}
+            >
+                <video className="video-element" controls loop muted playsInline>
                     <source src={vd} type="video/mp4" />
                     Your browser does not support the video tag.
                 </video>
-            </div>
+            </motion.div>
         </section>
     )
 }

@@ -1,5 +1,6 @@
 import React from 'react'
 import './how-it-works.css'
+import { motion } from 'framer-motion'
 
 export default function HowItWorks() {
     const steps = [
@@ -23,47 +24,68 @@ export default function HowItWorks() {
         }
     ]
 
+    // 🔹 Animation variants
+    const cardVariants = {
+        hidden: { opacity: 0, y: 30 },
+        visible: (i) => ({
+            opacity: 1,
+            y: 0,
+            transition: { delay: i * 0.2, duration: 0.5, ease: "easeOut" }
+        })
+    }
+
     return (
         <section className="how-it-works-section">
-            <div className="container">
+            <motion.div 
+                className="container"
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, amount: 0.2 }}
+            >
                 {/* Section Header */}
-                <div className="how-it-works-header">
+                <motion.div 
+                    className="how-it-works-header"
+                    initial={{ opacity: 0, y: -20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6 }}
+                >
                     <h2 className="how-it-works-title">How It Works</h2>
                     <div className="title-underline"></div>
-                </div>
+                </motion.div>
 
                 {/* Steps Grid */}
-                <div className="steps-grid">
+                <motion.div className="steps-grid">
                     {steps.map((step, index) => (
-                        <div
+                        <motion.div
                             key={step.number}
                             className="step-card"
-                            style={{ animationDelay: `${index * 150}ms` }}
+                            custom={index}
+                            variants={cardVariants}
                         >
                             {/* Step Number Badge */}
-                            <div className="step-badge">
+                            <motion.div className="step-badge">
                                 <span className="step-number">{step.number}</span>
-                            </div>
+                            </motion.div>
 
                             {/* Step Icon */}
-                            <div className="step-icon">
+                            <motion.div className="step-icon">
                                 <span className="icon-emoji">{step.icon}</span>
-                            </div>
+                            </motion.div>
 
                             {/* Step Content */}
-                            <div className="step-content">
+                            <motion.div className="step-content">
                                 <h3 className="step-title">{step.title}</h3>
                                 <p className="step-description">{step.description}</p>
-                            </div>
+                            </motion.div>
 
-                            {/* Connecting Line (hidden on last step) */}
+                            {/* Connecting Line */}
                             {index < steps.length - 1 && (
-                                <div className="connecting-line"></div>
+                                <motion.div className="connecting-line"></motion.div>
                             )}
-                        </div>
+                        </motion.div>
                     ))}
-                </div>
-            </div>
+                </motion.div>
+            </motion.div>
         </section>
     )
 }

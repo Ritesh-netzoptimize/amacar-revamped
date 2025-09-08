@@ -1,7 +1,7 @@
 :root {
-    --brand-blue: #0b5fc7;
-    --brand-red: #dc2626;
-    --accent: #ff7a59;
+    --brand-orange: #f6851f;   /* Orange */
+    --accent: #1e3a8a;    /* Navy orange */
+    --brand-purple: #3b2f8a; /* Purple (optional extra) */
     --muted: #64748b;
     --text-primary: #0b1220;
     --text-secondary: #475569;
@@ -57,7 +57,7 @@
 }
 
 .title-accent {
-    background: linear-gradient(135deg, var(--brand-blue), var(--accent));
+    background: linear-gradient(135deg, var(--brand-orange), var(--accent));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -67,7 +67,7 @@
 .title-underline {
     width: 120px;
     height: 3px;
-    background: linear-gradient(90deg, var(--brand-blue), var(--accent));
+    background: linear-gradient(90deg, var(--brand-orange), var(--accent));
     margin: 0 auto 30px;
     border-radius: 2px;
     position: relative;
@@ -81,7 +81,7 @@
     transform: translate(-50%, -50%);
     width: 6px;
     height: 6px;
-    background: var(--brand-blue);
+    background: var(--brand-orange);
     border-radius: 50%;
     box-shadow: 0 0 0 3px rgba(11, 95, 199, 0.1);
 }
@@ -127,7 +127,7 @@
     justify-content: center;
     width: 40px;
     height: 40px;
-    background: var(--brand-blue);
+    background: var(--brand-orange);
     border-radius: 50%;
     margin-bottom: 16px;
     box-shadow: var(--shadow-light);
@@ -163,7 +163,7 @@
     position: absolute;
     inset: -6px;
     border-radius: 50%;
-    background: linear-gradient(45deg, var(--brand-blue), var(--accent));
+    background: linear-gradient(45deg, var(--brand-orange), var(--accent));
     opacity: 0;
     transition: opacity 0.3s ease;
     z-index: -1;
@@ -288,7 +288,7 @@
     top: 100%;
     width: 2px;
     height: 32px;
-    background: linear-gradient(180deg, var(--brand-blue), transparent);
+    background: linear-gradient(180deg, var(--brand-orange), transparent);
     opacity: 0.4;
 }
 
@@ -358,7 +358,7 @@
 }
 
 /* Accessibility */
-@media (prefers-reduced-motion: reduce) {
+@media (prefers-purpleuced-motion: purpleuce) {
 
     .step-icon,
     .mobile-step-content {

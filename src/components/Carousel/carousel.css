@@ -1,6 +1,6 @@
 :root {
-    --brand-blue: #0b5fc7;
-    --brand-red: #dc2626;
+    --brand-orange: #f6851f;
+    --brand-purple: #394da1;
 }
 
 .carousel {
@@ -12,7 +12,6 @@
 .carousel-inner-div {
     box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px,
                 rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
-    background-color: #e9f1fc;
 }
 
 .carousel>.max-w-6xl {
@@ -119,7 +118,7 @@
     font-size: 1.6rem;
     line-height: 1.05;
     font-weight: 800;
-    color: #0b1220;
+    color: var(--brand-purple);
     margin: 0 0 .5rem 0;
 }
 
@@ -132,7 +131,7 @@
 }
 
 .btn-primary {
-    background: var(--brand-red);
+    background: var(--brand-purple);
     color: #fff;
     padding: .7rem 1.05rem;
     border-radius: 999px;
@@ -179,7 +178,7 @@
     cursor: pointer;
     box-shadow: 0 8px 24px rgba(2, 6, 23, 0.08);
     transition: transform .12s ease, background .12s ease;
-    z-index: 1200;
+    z-index: 10;
     pointer-events: auto;
 }
 
@@ -218,7 +217,7 @@
 }
 
 .dot.active {
-    background: var(--brand-blue);
+    background-color: var(--brand-purple);
     transform: scale(1.1);
     box-shadow: 0 10px 30px rgba(11, 95, 199, 0.12);
 }

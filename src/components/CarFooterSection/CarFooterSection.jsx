@@ -1,6 +1,6 @@
 import React from 'react'
 import { motion } from 'framer-motion'
-import carImage from '../../assets/car_footer.jpg'
+import carImage from '../../assets/footer_image.png'
 
 export default function CarFooterSection() {
     const containerVariants = {
@@ -58,7 +58,7 @@ export default function CarFooterSection() {
             <div className="absolute top-0 left-0 w-full h-full">
                 {/* Animated particles effect */}
                 <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-blue-400/30 rounded-full animate-pulse" />
-                <div className="absolute top-1/3 right-1/3 w-1 h-1 bg-red-400/40 rounded-full animate-pulse delay-1000" />
+                <div className="absolute top-1/3 right-1/3 w-1 h-1 bg-purple-400/40 rounded-full animate-pulse delay-1000" />
                 <div className="absolute bottom-1/3 left-1/3 w-1.5 h-1.5 bg-yellow-400/30 rounded-full animate-pulse delay-2000" />
                 <div className="absolute bottom-1/4 right-1/4 w-1 h-1 bg-green-400/40 rounded-full animate-pulse delay-500" />
 
@@ -85,9 +85,9 @@ export default function CarFooterSection() {
                 {/* Main Heading */}
                 <motion.div variants={itemVariants} className="mb-8">
                     <h2 className="mt-4 text-5xl lg:text-7xl font-black text-white mb-6 leading-tight">
-                        Ready to <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-red-400 to-yellow-400">Transform</span> Your Car Sale?
+                        Ready to <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-red-400 to-yellow-400">Transform</span> Your Car Sale?
                     </h2>
-                    <div className="w-32 h-1 bg-gradient-to-r from-blue-400 to-red-400 mx-auto rounded-full" />
+                    <div className="w-32 h-1 bg-gradient-to-r from-blue-400 to-purple-400 mx-auto rounded-full" />
                 </motion.div>
 
                 {/* Subheading */}
@@ -95,7 +95,7 @@ export default function CarFooterSection() {
                     variants={itemVariants}
                     className="text-xl lg:text-2xl text-slate-200 mb-12 max-w-4xl mx-auto leading-relaxed"
                 >
-                    Join thousands of satisfied customers who've discovered the smartest way to sell their vehicles.
+                    Join thousands of satisfied customers who've discovepurple the smartest way to sell their vehicles.
                     Get instant offers, watch dealers compete, and walk away with the best deal possible.
                 </motion.p>
 
@@ -128,7 +128,7 @@ export default function CarFooterSection() {
                         variants={buttonVariants}
                         whileHover="hover"
                         whileTap="tap"
-                        className="group cursor-pointer relative bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white px-12 py-6 rounded-2xl font-bold text-xl shadow-2xl hover:shadow-blue-500/25 transition-all duration-300 overflow-hidden"
+                        className="group cursor-pointer relative bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-500 hover:to-orange-600 text-white px-12 py-6 rounded-2xl font-bold text-xl shadow-2xl hover:shadow-blue-500/25 transition-all duration-300 overflow-hidden"
                     >
                         <span className="relative z-10 flex items-center gap-3">
                             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

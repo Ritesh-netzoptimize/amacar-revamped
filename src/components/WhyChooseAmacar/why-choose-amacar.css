@@ -53,7 +53,6 @@
 }
 
 .title-accent {
-    background: linear-gradient(135deg, var(--brand-blue), var(--accent));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -98,9 +97,9 @@
     bottom: 0;
     width: 3px;
     background: linear-gradient(180deg,
-            var(--brand-blue) 0%,
+            var(--brand-orange) 0%,
             var(--accent) 50%,
-            var(--brand-red) 100%);
+            var(--brand-purple) 100%);
     transform: translateX(-50%);
     border-radius: 2px;
     box-shadow: 0 0 20px rgba(11, 95, 199, 0.2);
@@ -150,7 +149,7 @@
     position: absolute;
     inset: -8px;
     border-radius: 50%;
-    background: linear-gradient(45deg, var(--brand-blue), var(--accent));
+    background: linear-gradient(45deg, var(--brand-orange), var(--accent));
     opacity: 0;
     transition: opacity 0.3s ease;
     z-index: -1;
@@ -241,7 +240,7 @@
 }
 
 .cta-button {
-    background: linear-gradient(135deg, var(--brand-blue), #1e40af);
+    background: linear-gradient(135deg, var(--brand-orange), var(--accent));
     color: white;
     padding: 16px 32px;
     border: none;

@@ -9,14 +9,14 @@ export default function WhyChooseAmacar() {
             title: "Free for Private Sellers",
             description: "Dealer network pays to compete for your listing – no fees for you.",
             icon: "💰",
-            color: "var(--brand-blue)"
+            color: "var(--brand-orange)"
         },
         {
             id: 2,
             title: "Secure Payment",
             description: "Verified payment after sale completion for your peace of mind.",
             icon: "🔒",
-            color: "var(--brand-red)"
+            color: "var(--brand-purple)"
         },
         {
             id: 3,

@@ -161,7 +161,7 @@ export default function TestimonialCarousel() {
                     <h2 className="text-3xl lg:text-4xl font-bold text-slate-900 mb-4">
                         What Our <span className="text-blue-600">Customers</span> Say
                     </h2>
-                    <div className="w-20 h-1 bg-gradient-to-r from-blue-600 to-red-500 mx-auto rounded-full"></div>
+                    <div className="w-20 h-1 bg-gradient-to-r from-blue-600 to-purple-500 mx-auto rounded-full"></div>
                 </div>
 
                 {/* Carousel Container */}
@@ -192,7 +192,7 @@ export default function TestimonialCarousel() {
                                 <div className="group relative bg-gradient-to-br from-white to-slate-50 rounded-3xl p-8 transition-all class-for-shadow duration-500 hover:scale-105 border border-slate-200/50 overflow-hidden h-full">
                                     {/* Decorative background pattern */}
                                     <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-100/30 to-transparent rounded-full -translate-y-16 translate-x-16"></div>
-                                    <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-red-100/30 to-transparent rounded-full translate-y-12 -translate-x-12"></div>
+                                    <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-purple-100/30 to-transparent rounded-full translate-y-12 -translate-x-12"></div>
 
                                     {/* Quote icon */}
                                     <div className="absolute top-4 right-4 text-blue-200/50 text-4xl font-serif">"</div>
@@ -254,7 +254,7 @@ export default function TestimonialCarousel() {
                             }`}
                         aria-label="Previous testimonial"
                     >
-                        <svg className="w-6 h-6 text-slate-600 group-hover:text-blue-600 transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-6 h-6 text-slate-600 group-hover:text-orange-600 transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                         </svg>
                     </button>
@@ -266,7 +266,7 @@ export default function TestimonialCarousel() {
                             }`}
                         aria-label="Next testimonial"
                     >
-                        <svg className="w-6 h-6 text-slate-600 group-hover:text-blue-600 transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-6 h-6 text-slate-600 group-hover:text-orange-600 transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                         </svg>
                     </button>
@@ -280,7 +280,7 @@ export default function TestimonialCarousel() {
                             onClick={() => goToSlide(index)}
                             disabled={isTransitioning}
                             className={`w-3 h-3 rounded-full transition-all duration-300 ${index === currentIndex
-                                ? 'bg-blue-600 scale-125'
+                                ? 'bg-orange-600 scale-125'
                                 : 'bg-slate-300 hover:bg-slate-400'
                                 } ${isTransitioning ? 'opacity-50' : ''}`}
                             aria-label={`Go to testimonial ${index + 1}`}

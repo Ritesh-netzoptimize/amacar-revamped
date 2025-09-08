@@ -31,7 +31,7 @@ export default function TwoColumnSection() {
     return (
         <section className="relative py-12 px-4 bg-gradient-to-br from-white via-slate-50 to-blue-50/30">
             {/* Background blur effect */}
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-500/3 via-transparent to-red-500/3"></div>
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-500/3 via-transparent to-purple-500/3"></div>
 
             <div className="relative z-10 max-w-6xl mx-auto">
                 <motion.div
@@ -53,7 +53,7 @@ export default function TwoColumnSection() {
                             Unlock The Best Offers And Streamline Your Selling Process With Just A Few Clicks.
                         </p>
                         <motion.button
-                            className="bg-gradient-to-r cursor-pointer from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 hover:scale-105 shadow-md hover:shadow-lg"
+                            className="bg-gradient-to-r cursor-pointer from-orange-600 to-orange-700 hover:from-blue-700 hover:to-blue-800 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 hover:scale-105 shadow-md hover:shadow-lg"
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                         >
@@ -63,7 +63,7 @@ export default function TwoColumnSection() {
 
                     {/* Column 2 */}
                     <motion.div
-                        className="space-y-5 p-6 lg:p-8 bg-[#0b5fc7] backdrop-blur-sm rounded-2xl border border-white/20 shadow-sm hover:shadow-md transition-all duration-300"
+                        className="space-y-5 p-6 lg:p-8 bg-[#394da1] backdrop-blur-sm rounded-2xl border border-white/20 shadow-sm hover:shadow-md transition-all duration-300"
                         variants={itemVariants}
                     >
                         <h2 className="text-2xl lg:text-3xl font-bold text-white leading-tight">
@@ -73,7 +73,7 @@ export default function TwoColumnSection() {
                             Ready to get the best offers for your vehicle? Start your auction now and see the difference.
                         </p>
                         <motion.button
-                            className="cursor-pointer bg-red-500 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 hover:scale-105 shadow-md hover:shadow-lg"
+                            className="cursor-pointer bg-white text-[#394da1] px-6 py-3 rounded-xl font-semibold transition-all duration-300 hover:scale-105 shadow-md hover:shadow-lg"
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                         >

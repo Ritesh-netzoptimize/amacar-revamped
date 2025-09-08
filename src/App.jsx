@@ -17,7 +17,7 @@ function App() {
     <div className="min-h-screen bg-slate-50">
       <Header />
 
-      <main className="pt-0">
+      <main className="pt-0 bg-white">
         <Hero />
         <SectionHeader title="How Amacar works" highlight="Sell smarter, faster" />
         <Carousel />

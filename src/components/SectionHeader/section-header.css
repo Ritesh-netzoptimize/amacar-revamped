@@ -31,7 +31,7 @@
     margin-left: .6rem;
     border-radius: 999px;
     background: linear-gradient(90deg, rgba(11, 95, 199, 0.12), rgba(220, 38, 38, 0.08));
-    color: var(--brand-blue)
+    color: var(--brand-orange)
 }
 
 /* make title inline so it centers nicely */

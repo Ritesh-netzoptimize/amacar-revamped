@@ -1,6 +1,6 @@
 :root {
-    --brand-blue: #0b5fc7;
-    /* trustful blue */
+    --brand-orange: #f6851f;
+    /* trustful orange */
     --accent: #ff7a59;
     /* warm accent for highlights */
     --muted: #64748b;
@@ -26,7 +26,7 @@
     width: 40px;
     height: 40px;
     border-radius: 6px;
-    background: var(--brand-blue);
+    background: var(--brand-orange);
     color: #fff;
     display: flex;
     align-items: center;
@@ -38,7 +38,7 @@
 /* Desktop nav */
 .site-header .nav-link {
     color: #0b1220;
-    font-weight: 600;
+    /* font-weight: 600; */
     padding: 8px 0;
     display: inline-block;
     transition: color .16s ease
@@ -55,7 +55,7 @@
 }
 
 .site-header .nav-link:hover {
-    color: var(--brand-blue)
+    color: var(--brand-orange)
 }
 
 .site-header .nav-link:hover::after {
@@ -68,12 +68,12 @@
 }
 
 .btn-login {
-    background: var(--brand-blue);
+    background: var(--brand-orange);
     color: #fff;
     padding: .5rem .9rem;
     border-radius: 8px;
     font-weight: 700;
-    box-shadow: 0 6px 14px rgba(11, 95, 199, 0.08);
+    box-shadow: 0 6px 14px rgba(199, 124, 11, 0.08);
     /* do not include transform so the button never moves; animate visual-only properties */
     transition: box-shadow .18s ease, filter .12s ease, background-color .12s ease;
     position: relative;
@@ -87,18 +87,18 @@
     inset: 0;
     border-radius: inherit;
     pointer-events: none;
-    box-shadow: 0 0 0 rgba(11, 95, 199, 0);
+    box-shadow: 0 0 0 rgba(199, 149, 11, 0);
     opacity: 0;
     transition: box-shadow .18s ease, opacity .18s ease;
 }
 
 .btn-login:hover {
     filter: brightness(1.03);
-    box-shadow: 0 10px 30px rgba(11, 95, 199, 0.12);
+    box-shadow: 0 10px 30px rgba(199, 111, 11, 0.12);
 }
 
 .btn-login:hover::after {
-    box-shadow: 0 18px 40px rgba(11, 95, 199, 0.10);
+    box-shadow: 0 18px 40px rgba(199, 117, 11, 0.1);
     opacity: 1;
 }
 
@@ -160,17 +160,17 @@
     padding: .6rem .8rem;
     border-radius: 8px;
     color: #0b1220;
-    font-weight: 600;
+    /* font-weight: 600; */
     transition: background .12s ease
 }
 
 .nav-link-mobile:hover {
     background: rgba(11, 95, 199, 0.04);
-    color: var(--brand-blue)
+    color: var(--brand-orange)
 }
 
 .btn-login-mobile {
-    background: var(--brand-blue);
+    background: var(--brand-orange);
     color: #fff;
     padding: .5rem .8rem;
     border-radius: 8px;
@@ -185,7 +185,7 @@
     justify-content: space-between;
     height: 64px;
     position: relative;
-    /* needed so nav-desktop can be absolutely centered */
+    /* needed so nav-desktop can be absolutely centepurple */
 }
 
 .nav-desktop {
@@ -198,7 +198,7 @@
 
 .logo {
     width: 120px;
-    /* desired default size */
+    /* desipurple default size */
     max-width: 100%;
     /* never overflow its container */
     height: auto;

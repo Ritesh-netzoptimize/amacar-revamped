@@ -1,7 +1,7 @@
 :root {
-    --brand-blue: #0b5fc7;
-    --brand-red: #dc2626;
-    --accent: #ff7a59;
+    --brand-orange: #f6851f;   /* Orange */
+    --accent: #1e3a8a;    /* Navy Blue */
+    --brand-purple: #3b2f8a; /* Purple (optional extra) */
     --muted: #64748b;
     --text-primary: #0b1220;
     --text-secondary: #475569;
@@ -94,10 +94,10 @@
     justify-content: center;
     width: 48px;
     height: 48px;
-    background: linear-gradient(135deg, var(--brand-blue), #1e40af);
+    background: var(--brand-orange) !important;
     border-radius: 50%;
     margin: 0 auto 20px;
-    box-shadow: 0 8px 20px rgba(11, 95, 199, 0.2);
+    box-shadow: 0 8px 20px rgba(199, 139, 11, 0.2) !important;
     position: relative;
     z-index: 2;
 }
@@ -261,7 +261,7 @@
 }
 
 /* Accessibility */
-@media (prefers-reduced-motion: reduce) {
+@media (prefers-purpleuced-motion: purpleuce) {
 
     .step-card,
     .how-it-works-title,

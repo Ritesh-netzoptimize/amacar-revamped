@@ -9,35 +9,35 @@ export default function WinWinAmacar() {
             title: "Get a Competitive Value",
             description: "Start by getting your instant cash offer.",
             icon: "💰",
-            color: "var(--brand-blue)"
+            color: "var(--brand-orange)"
         },
         {
             id: 2,
             title: "Accept the Offer",
             description: "Accept the offer by selected dealer.",
             icon: "✅",
-            color: "var(--brand-red)"
+            color: "var(--accent)"
         },
         {
             id: 3,
             title: "Auction Your Ride",
             description: "Auction your ride and have dealers bid on it.",
             icon: "🔨",
-            color: "var(--accent)"
+            color: "var(--brand-orange)"
         },
         {
             id: 4,
             title: "Dealer Bids on Your Car",
             description: "Let dealers bid on your car, get the most value for it.",
             icon: "🏢",
-            color: "var(--brand-blue)"
+            color: "var(--accent)"
         },
         {
             id: 5,
             title: "Seamless Transaction",
             description: "Finalize the transaction with the best auction offer through a member dealer.",
             icon: "🤝",
-            color: "var(--brand-red)"
+            color: "var(--brand-orange)"
         }
     ]
 

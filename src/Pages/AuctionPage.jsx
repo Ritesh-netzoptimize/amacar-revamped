@@ -61,8 +61,8 @@ export default function AuctionPage() {
     const allValid = completedCount === Object.keys(values).length
 
     function handleChange(key, raw) {
-        const v = key === "mileage" ? raw.replace(/[^0-9]/g, "") : raw
-        setValues((prev) => ({ ...prev, [key]: v }))
+            let v = key === "mileage" ? raw.replace(/[^0-9]/g, "").substring(0, 7) : raw
+            setValues((prev) => ({ ...prev, [key]: v }))
     }
 
     function handleBlur(key) {
@@ -229,7 +229,7 @@ export default function AuctionPage() {
                                                     <div className="relative">
                                                         <input
                                                             type={type}
-                                                            value={key === "mileage" && value ? Number(value).toLocaleString() : value}
+                                                            value={key === "mileage" && value ? Number(value) : value}
                                                             onChange={(e) => handleChange(key, e.target.value)}
                                                             onBlur={() => handleBlur(key)}
                                                             placeholder={placeholder}

@@ -27,8 +27,8 @@ export default function WinWinAmacar() {
         },
         {
             id: 4,
-            title: "Dealer Bids on Your Car",
-            description: "Let dealers bid on your car, get the most value for it.",
+            title: "Dealer Bids",
+            description: "Get the most value for dealer's bid.",
             icon: "🏢",
             color: "var(--accent)"
         },

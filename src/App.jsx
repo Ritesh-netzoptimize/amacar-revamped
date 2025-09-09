@@ -1,64 +1,101 @@
-import Header from './components/Header/Header.jsx'
-import Hero from './components/Hero/Hero.jsx'
-import Carousel from './components/Carousel/Carousel.jsx'
-import SectionHeader from './components/SectionHeader/SectionHeader.jsx'
-import HowItWorks from './components/HowItWorks/HowItWorks.jsx'
-import WhyChooseAmacar from './components/WhyChooseAmacar/WhyChooseAmacar.jsx'
-import WinWinAmacar from './components/WinWinAmacar/WinWinAmacar.jsx'
-import TwoColumnSection from './components/TwoColumnSection/TwoColumnSection.jsx'
-import TestimonialCarousel from './components/TestimonialCarousel/TestimonialCarousel.jsx'
-import CarFooterSection from './components/CarFooterSection/CarFooterSection.jsx'
-import Footer from './components/Footer/Footer.jsx'
+import Header from './components/Layout/Header/Header.jsx'
+import Footer from './components/Layout/Footer/Footer.jsx'
 import './App.css'
-import VideoSection from './components/VideoSection/videoSection.jsx'
 import { Toaster } from "react-hot-toast"
+import HomePage from './Pages/HomePage.jsx'
+import { Route, Router, Routes } from 'react-router-dom'
+import AuctionPage from './Pages/AuctionPage.jsx'
+import DashboardLayout from './components/Layout/DashboardLayout/DashboardLayout.jsx'
+import Dashboard from './Pages/Dashboard.jsx'
+import LiveAuctionsPage from './Pages/LiveAuctionsPage.jsx'
+import PendingOffersPage from './Pages/PendingOffersPage.jsx'
+import PreviousOffersPage from './Pages/PreviousOffersPage.jsx'
+import AcceptedOffersPage from './Pages/AcceptedOffersPage.jsx'
+import MyAppointments from './Pages/MyAppointments.jsx'
+import ProfilePage from './Pages/ProfilePage.jsx'
+import ConditionAssessment from './Pages/ConditionAssessment.jsx'
+import ExteriorPhotos from './Pages/ExteriorPhotos.jsx'
+import ReviewPage from './Pages/ReviewPage.jsx'
 
 function App() {
   return (
-    <div className="min-h-screen bg-slate-50">
-      <Toaster
-          position="top-right"
-          toastOptions={{
-            duration: 4000,
-            style: {
-              background: '#363636',
-              color: '#fff',
-              borderRadius: '12px',
-              padding: '16px',
-              fontSize: '14px',
-              fontWeight: '500',
-            },
-            success: {
-              iconTheme: {
-                primary: '#10b981',
-                secondary: '#fff',
+      <div className="min-h-screen bg-slate-50">
+        <Toaster
+            position="top-right"
+            toastOptions={{
+              duration: 4000,
+              style: {
+                background: '#363636',
+                color: '#fff',
+                borderRadius: '12px',
+                padding: '16px',
+                fontSize: '14px',
+                fontWeight: '500',
               },
-            },
-            error: {
-              iconTheme: {
-                primary: '#ef4444',
-                secondary: '#fff',
+              success: {
+                iconTheme: {
+                  primary: '#10b981',
+                  secondary: '#fff',
+                },
               },
-            },
-          }}
-        />
-      <Header />
+              error: {
+                iconTheme: {
+                  primary: '#ef4444',
+                  secondary: '#fff',
+                },
+              },
+            }}
+          />
+        <Header />
 
-      <main className="pt-0 bg-white">
-        <Hero />
-        <SectionHeader title="How Amacar works" highlight="Sell smarter, faster" />
-        <Carousel />
-        <HowItWorks />
-        <VideoSection />
-        <WhyChooseAmacar />
-        <WinWinAmacar />
-        <TwoColumnSection />
-        <TestimonialCarousel />
-        <CarFooterSection />
-      </main>
+        <main className="pt-0 bg-white">
+        <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/auction-page" element={<AuctionPage />} />
+            <Route path="/condition-assessment" element={<ConditionAssessment />} />
+            <Route path="/local-auction" element={<ExteriorPhotos />} />
+            <Route path="/national-auction" element={<ExteriorPhotos />} />
+            <Route path="/review" element={<ReviewPage />} />
+            <Route path="/dashboard" element={
+              <DashboardLayout>
+                <Dashboard />
+              </DashboardLayout>
+            } />
+            <Route path="/auctions" element={
+              <DashboardLayout>
+                <LiveAuctionsPage />
+              </DashboardLayout>
+            } />
+            <Route path="/pending-offers" element={
+              <DashboardLayout>
+                <PendingOffersPage />
+              </DashboardLayout>
+            } />
+            <Route path="/offers" element={
+              <DashboardLayout>
+                <PreviousOffersPage />
+              </DashboardLayout>
+            } />
+            <Route path="/accepted" element={
+              <DashboardLayout>
+                <AcceptedOffersPage />
+              </DashboardLayout>
+            } />
+            <Route path="/appointments" element={
+              <DashboardLayout>
+                <MyAppointments />
+              </DashboardLayout>
+            } />
+            <Route path="/profile" element={
+              <DashboardLayout>
+                <ProfilePage />
+              </DashboardLayout>
+            } />
+          </Routes>
+        </main>
 
-      <Footer />
-    </div>
+        <Footer />
+      </div>
   )
 }
 

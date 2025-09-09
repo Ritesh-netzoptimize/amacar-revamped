@@ -15,14 +15,15 @@ import {
   AlertCircle,
   Loader2
 } from 'lucide-react';
-import Header from '@/components/Header/Header';
 import { useNavigate } from 'react-router-dom';
+import LaunchModal from '@/components/ui/LaunchModal';
 
 export default function ReviewPage() {
   const navigate = useNavigate();
   const [isLaunching, setIsLaunching] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [completedSteps, setCompletedSteps] = useState([]);
+  const [modalOpen, setModalOpen] = useState(false);
   useEffect(() => {
     if (isLaunching) {
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -67,36 +68,14 @@ export default function ReviewPage() {
 
   const handleLaunchAuction = () => {
     setIsLaunching(true);
-    setCurrentStep(0);
-    setCompletedSteps([]);
+    setModalOpen(true);
     
-    // Simulate step progression
-    const stepInterval = setInterval(() => {
-      setCurrentStep(prev => {
-        const nextStep = prev + 1;
-        if (nextStep >= launchSteps.length) {
-          clearInterval(stepInterval);
-          // Navigate to dashboard after completion
-          setTimeout(() => {
-            navigate('/dashboard');
-          }, 2000);
-          return prev;
-        }
-        return nextStep;
-      });
-    }, 1500);
+    
+  };
 
-    // Mark steps as completed
-    const completionInterval = setInterval(() => {
-      setCompletedSteps(prev => {
-        const nextCompleted = prev.length + 1;
-        if (nextCompleted >= launchSteps.length) {
-          clearInterval(completionInterval);
-          return prev;
-        }
-        return [...prev, nextCompleted - 1];
-      });
-    }, 1500);
+  const handleModalClose = () => {
+    setModalOpen(false);
+    setIsLaunching(false);
   };
 
   const containerVariants = {
@@ -129,7 +108,6 @@ export default function ReviewPage() {
 
   return (
     <>
-      <Header />
       <div className="relative min-h-screen w-full overflow-hidden bg-gradient-to-b from-slate-50 to-slate-100 pt-20 md:pt-24">
         <div className="mx-auto max-w-7xl px-6 py-12">
           
@@ -430,116 +408,13 @@ export default function ReviewPage() {
           )}
 
           {/* Launch Simulation Section */}
-          {isLaunching && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              className="mt-12 bg-white rounded-2xl shadow-lg border border-slate-200 p-8"
-            >
-              {/* Header */}
-              <div className="text-center mb-8">
-                <div className="flex items-center justify-center gap-3 mb-4">
-                  <div className="p-3 bg-gradient-to-r from-orange-100 to-red-100 rounded-xl">
-                    <Rocket className="h-6 w-6 text-orange-600" />
-                  </div>
-                  <h2 className="text-2xl font-bold text-slate-900">Launching Your Auction</h2>
-                </div>
-                <p className="text-slate-600">Setting up your auction for maximum visibility</p>
-              </div>
-
-              {/* Progress Steps */}
-              <div className="space-y-4">
-                {launchSteps.map((step, index) => {
-                  const isActive = index === currentStep;
-                  const isCompleted = completedSteps.includes(index);
-                  const isUpcoming = index > currentStep;
-                  
-                  return (
-                    <motion.div
-                      key={index}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.1 }}
-                      className={`flex items-center gap-4 p-4 rounded-xl transition-all duration-300 ${
-                        isActive 
-                          ? 'bg-gradient-to-r from-orange-50 to-red-50 border-2 border-orange-200' 
-                          : isCompleted 
-                          ? 'bg-green-50 border border-green-200' 
-                          : 'bg-slate-50 border border-slate-200'
-                      }`}
-                    >
-                      {/* Icon */}
-                      <div className="flex-shrink-0">
-                        {isCompleted ? (
-                          <motion.div
-                            initial={{ scale: 0 }}
-                            animate={{ scale: 1 }}
-                            transition={{ type: "spring", stiffness: 200, damping: 15 }}
-                            className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center"
-                          >
-                            <CheckCircle className="h-5 w-5 text-white" />
-                          </motion.div>
-                        ) : isActive ? (
-                          <motion.div
-                            animate={{ rotate: 360 }}
-                            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                            className="w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full"
-                          />
-                        ) : (
-                          <div className="w-8 h-8 bg-slate-300 rounded-full flex items-center justify-center">
-                            <span className="text-slate-500 text-sm font-medium">{index + 1}</span>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Step Text */}
-                      <div className="flex-1">
-                        <p className={`font-medium transition-colors duration-300 ${
-                          isActive 
-                            ? 'text-orange-700' 
-                            : isCompleted 
-                            ? 'text-green-700' 
-                            : 'text-slate-500'
-                        }`}>
-                          {step}
-                        </p>
-                      </div>
-
-                      {/* Status Indicator */}
-                      {isActive && (
-                        <motion.div
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          className="flex items-center gap-2 text-orange-600"
-                        >
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                          <span className="text-sm font-medium">Processing...</span>
-                        </motion.div>
-                      )}
-                    </motion.div>
-                  );
-                })}
-              </div>
-
-              {/* Info Note */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.5 }}
-                className="mt-6 p-4 bg-blue-50 rounded-xl border border-blue-200"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-blue-100 rounded-lg">
-                    <Clock className="h-4 w-4 text-blue-600" />
-                  </div>
-                  <p className="text-blue-700 text-sm">
-                    <strong>Please wait:</strong> This may take a few moments. Please don't close this window.
-                  </p>
-                </div>
-              </motion.div>
-            </motion.div>
-          )}
+          {isLaunching && <LaunchModal
+            isOpen={modalOpen}
+            onClose={() => handleModalClose()}
+            onLaunch={handleLaunchAuction}
+            setModalOpen = {setModalOpen}
+            setIsLaunching = {setIsLaunching}
+        />}
         </div>
       </div>
     </>

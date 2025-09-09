@@ -1,5 +1,4 @@
 import React, { useMemo, useState, useEffect } from "react";
-import Header from "@/components/Header/Header";
 import { motion } from "framer-motion";
 import { CheckCircle2, Circle, ChevronLeft, ChevronRight, User, Mail, Phone, Home, MapPin, Building, Landmark, Globe } from "lucide-react";
 import AuctionSelectionModal from "@/components/ui/auction-selection-modal";
@@ -272,7 +271,6 @@ export default function ConditionAssessment() {
 
   return (
     <>
-      <Header />
       <div className="relative min-h-screen w-full overflow-hidden bg-gradient-to-b from-slate-50 to-slate-100 pt-20 md:pt-24">
         <div className="mx-auto max-w-7xl px-6 py-8 md:py-12">
           <h1 className="mb-6 text-center text-3xl md:text-4xl font-bold text-slate-900">

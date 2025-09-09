@@ -1,6 +1,6 @@
 import React from 'react'
 import { motion } from 'framer-motion'
-import carImage from '../../assets/footer_image.png'
+import carImage from '../../../assets/footer_image.png'
 
 export default function CarFooterSection() {
     const containerVariants = {

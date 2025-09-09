@@ -11,7 +11,6 @@ import {
     XCircle,
     ChevronLeft,
 } from "lucide-react"
-import Header from "@/components/Header/Header"
 import { Link } from "react-router-dom"
 
 
@@ -83,7 +82,6 @@ export default function AuctionPage() {
 
     return (
         <>
-            <Header/>
             <div className="relative min-h-screen w-full overflow-hidden bg-gradient-to-b from-slate-50 to-slate-100 pt-20 md:pt-24">
             {/* Animated background accents */}
             <motion.div
@@ -284,7 +282,7 @@ export default function AuctionPage() {
                                         <button
                                             type="submit"
                                             onClick={() => setTouched((prev) => ({ ...prev, engineType: true, bodyEngineType: true }))}
-                                            className="inline-flex h-11 items-center justify-center rounded-xl bg-gradient-to-r from-[#f6851f] to-[#e63946] px-6 text-sm font-semibold text-white shadow-lg shadow-orange-500/25 transition hover:scale-[1.01] "
+                                            className="cursor-pointer inline-flex h-11 items-center justify-center rounded-xl bg-gradient-to-r from-[#f6851f] to-[#e63946] px-6 text-sm font-semibold text-white shadow-lg shadow-orange-500/25 transition hover:scale-[1.01] "
                                         >
                                             {showAll ? 'Submit' : 'Confirm'}
                                         </button>

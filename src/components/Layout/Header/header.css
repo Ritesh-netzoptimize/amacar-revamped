@@ -17,7 +17,7 @@
 }
 
 .site-header .container {
-    max-width: 1120px;
+    /* max-width: 1120px; */
     margin: 0 auto;
     padding: 0 1rem
 }
@@ -51,7 +51,6 @@
     width: 0;
     background: var(--accent);
     transition: width .18s ease;
-    margin-top: 6px
 }
 
 .site-header .nav-link:hover {
@@ -218,8 +217,9 @@
     /* Center the nav absolutely so logo (left) and actions (right) keep equal spacing */
     .nav-desktop {
         display: flex;
-        gap: 28px;
         align-items: center;
+
+        gap: 50px;
         position: absolute;
         left: 50%;
         transform: translateX(-50%);

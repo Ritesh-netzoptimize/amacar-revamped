@@ -6,7 +6,6 @@ import {
   ChevronLeft,
   X
 } from 'lucide-react';
-import Header from '@/components/Header/Header';
 import { useNavigate } from 'react-router-dom';
 
 export default function ExteriorPhotos() {
@@ -155,12 +154,32 @@ export default function ExteriorPhotos() {
   
     return (
       <>
-        <Header />
         <div className="relative min-h-screen w-full overflow-hidden bg-gradient-to-b from-slate-50 to-slate-100 pt-20 md:pt-24">
           <div className="mx-auto max-w-7xl px-6 py-12">
             <div className="max-w-4xl mx-auto">
         {/* Step Indicator */}
-        <div className="mb-8">
+        <div className="flex flex-col gap-10">
+
+{/* Progress Bar */}
+<div className='border-2 border-[var(--brand-orange)] rounded-[10px] p-[2rem]'>
+            <div className="flex items-center justify-between mb-4">
+                <span className="text-lg font-semibold text-slate-700">
+                {currentStep === 'exterior' ? 'Exterior' : 'Interior'} Photos: {uploadedCount} of {totalRequired}
+                </span>
+                <span className="text-lg font-semibold text-[#f6851f]">
+                {progress}% Complete
+                </span>
+            </div>
+            <div className="w-full bg-slate-200 rounded-full h-3">
+                <motion.div
+                className="bg-gradient-to-r from-[#f6851f] to-[#e63946] h-3 rounded-full"
+                initial={{ width: 0 }}
+                animate={{ width: `${progress}%` }}
+                transition={{ duration: 0.5, ease: "easeOut" }}
+                />
+            </div>
+          </div>
+
           <div className="flex items-center justify-center space-x-4 mb-6">
             <div className={`flex items-center space-x-2 px-4 py-2 rounded-full ${
               currentStep === 'exterior' ? 'bg-[#f6851f] text-white' : 'bg-slate-200 text-slate-600'
@@ -185,38 +204,14 @@ export default function ExteriorPhotos() {
             </div>
           </div>
   
-          {/* Progress Bar */}
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-lg font-semibold text-slate-700">
-              {currentStep === 'exterior' ? 'Exterior' : 'Interior'} Photos: {uploadedCount} of {totalRequired}
-            </span>
-            <span className="text-lg font-semibold text-[#f6851f]">
-              {progress}% Complete
-            </span>
-          </div>
-          <div className="w-full bg-slate-200 rounded-full h-3">
-            <motion.div
-              className="bg-gradient-to-r from-[#f6851f] to-[#e63946] h-3 rounded-full"
-              initial={{ width: 0 }}
-              animate={{ width: `${progress}%` }}
-              transition={{ duration: 0.5, ease: "easeOut" }}
-            />
-          </div>
+          
           
         </div>
   
         {/* Current Step Header */}
         <div className="text-center mb-8">
-          <div className={`w-20 h-20 mx-auto mb-4 rounded-2xl flex items-center justify-center ${
-            currentStep === 'exterior' ? 'bg-blue-100' : 'bg-green-100'
-          }`}>
-            <span className="text-4xl">
-              {currentStep === 'exterior' ? '🚗' : '🪑'}
-            </span>
-          </div>
-          <h2 className="text-3xl font-bold text-slate-800 mb-2">
-            {currentStep === 'exterior' ? 'Exterior Photos' : 'Interior Photos'}
-          </h2>
+          
+       
           <p className="text-lg text-slate-600">
             {currentStep === 'exterior' 
               ? 'Upload 7 photos showing the exterior of your vehicle' 
@@ -356,7 +351,7 @@ export default function ExteriorPhotos() {
           currentStep === 'exterior' ? 'bg-blue-50' : 'bg-green-50'
         }`}>
           <h3 className={`text-lg font-semibold mb-4 ${
-            currentStep === 'exterior' ? 'text-blue-700' : 'text-green-700'
+            currentStep === 'exterior' ? 'text-[var(--brand-purple)]' : 'text-[var(--brand-purple)]'
           }`}>
             📸 {currentStep === 'exterior' ? 'Exterior' : 'Interior'} Photo Tips
           </h3>
@@ -364,39 +359,39 @@ export default function ExteriorPhotos() {
             {currentStep === 'exterior' ? (
               <>
                 <div className="flex items-start space-x-2">
-                  <CheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0 text-blue-600" />
-                  <span className="text-blue-600">Take photos in good lighting (outdoor preferred)</span>
+                  <CheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0 text-[var(--brand-purple)]" />
+                  <span className="text-[var(--brand-purple)]">Take photos in good lighting (outdoor preferred)</span>
                 </div>
                 <div className="flex items-start space-x-2">
-                  <CheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0 text-blue-600" />
-                  <span className="text-blue-600">Clean your vehicle before taking photos</span>
+                  <CheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0 text-[var(--brand-purple)]" />
+                  <span className="text-[var(--brand-purple)]">Clean your vehicle before taking photos</span>
                 </div>
                 <div className="flex items-start space-x-2">
-                  <CheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0 text-blue-600" />
-                  <span className="text-blue-600">Include all angles and important details</span>
+                  <CheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0 text-[var(--brand-purple)]" />
+                  <span className="text-[var(--brand-purple)]">Include all angles and important details</span>
                 </div>
                 <div className="flex items-start space-x-2">
-                  <CheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0 text-blue-600" />
-                  <span className="text-blue-600">Show wheels, lights, and body condition clearly</span>
+                  <CheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0 text-[var(--brand-purple)]" />
+                  <span className="text-[var(--brand-purple)]">Show wheels, lights, and body condition clearly</span>
                 </div>
               </>
             ) : (
               <>
                 <div className="flex items-start space-x-2">
-                  <CheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0 text-green-600" />
-                  <span className="text-green-600">Ensure good interior lighting</span>
+                  <CheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0 text-[var(--brand-purple)]" />
+                  <span className="text-[var(--brand-purple)]">Ensure good interior lighting</span>
                 </div>
                 <div className="flex items-start space-x-2">
-                  <CheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0 text-green-600" />
-                  <span className="text-green-600">Clean interior before photographing</span>
+                  <CheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0 text-[var(--brand-purple)]" />
+                  <span className="text-[var(--brand-purple)]">Clean interior before photographing</span>
                 </div>
                 <div className="flex items-start space-x-2">
-                  <CheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0 text-green-600" />
-                  <span className="text-green-600">Make sure odometer reading is clearly visible</span>
+                  <CheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0 text-[var(--brand-purple)]" />
+                  <span className="text-[var(--brand-purple)]">Make sure odometer reading is clearly visible</span>
                 </div>
                 <div className="flex items-start space-x-2">
-                  <CheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0 text-green-600" />
-                  <span className="text-green-600">Show seat condition and dashboard details</span>
+                  <CheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0 text-[var(--brand-purple)]" />
+                  <span className="text-[var(--brand-purple)]">Show seat condition and dashboard details</span>
                 </div>
               </>
             )}
@@ -418,7 +413,7 @@ export default function ExteriorPhotos() {
           <motion.button
             onClick={handleNextStep}
             disabled={!isCurrentStepComplete}
-            className={`inline-flex h-11 items-center justify-center rounded-xl bg-gradient-to-r from-[#f6851f] to-[#e63946] px-6 text-sm font-semibold text-white shadow-lg shadow-orange-500/25 transition hover:scale-[1.01] ${
+            className={`cursor-pointer inline-flex h-11 items-center justify-center rounded-xl bg-gradient-to-r from-[#f6851f] to-[#e63946] px-6 text-sm font-semibold text-white shadow-lg shadow-orange-500/25 transition hover:scale-[1.01] ${
               !isCurrentStepComplete ? 'opacity-50 cursor-not-allowed' : ''
             }`}
             whileHover={isCurrentStepComplete ? { scale: 1.02 } : {}}

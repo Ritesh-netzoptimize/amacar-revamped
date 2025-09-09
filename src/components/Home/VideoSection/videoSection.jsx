@@ -1,7 +1,7 @@
 import React from 'react'
 import { motion } from 'framer-motion'
 import './videoSection.css'
-import vd from '../../assets/video_amacar.mp4'
+import vd from '../../../assets/video_amacar.mp4'
 
 export default function VideoSection() {
     // 🔹 Variants for animation

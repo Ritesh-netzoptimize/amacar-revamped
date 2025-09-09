@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react'
 import './carousel.css'
-import img from '../../assets/home_Page_first_hero(1).jpg'
+import img from '../../../assets/home_Page_first_hero(1).jpg'
 
 const slides = [
     {

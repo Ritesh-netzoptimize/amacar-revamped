@@ -10,14 +10,14 @@ export default function Header() {
                 <div className="header-row">
                     {/* left: logo area */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 180 }}>
-                        <a href="#" style={{ display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none' }}>
+                        <a href="/" style={{ display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none' }}>
                             <img className='logo' src="src\assets\original_logo.jpg" alt="" />
                         </a>
                     </div>
 
                     {/* center: nav (absolutely centepurple on desktop) */}
                     <nav className="nav-desktop">
-                        <a className="nav-link" href="#">Home</a>
+                        <a className="nav-link" href="/">Home</a>
                         <a className="nav-link" href="#">Testimonials</a>
                         <a className="nav-link" href="#">Join Our Dealer Network</a>
                         <a className="nav-link" href="#">Our Vision</a>

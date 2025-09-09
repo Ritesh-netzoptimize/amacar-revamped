@@ -2,6 +2,7 @@ import React, { useMemo, useState, useEffect } from "react";
 import Header from "@/components/Header/Header";
 import { motion } from "framer-motion";
 import { CheckCircle2, Circle, ChevronLeft, ChevronRight } from "lucide-react";
+import AuctionSelectionModal from "@/components/ui/auction-selection-modal";
 
 export default function ConditionAssessment() {
   const questions = useMemo(
@@ -102,6 +103,7 @@ export default function ConditionAssessment() {
   const [details, setDetails] = useState({});
   const [currentPage, setCurrentPage] = useState(0);
   const [showValidation, setShowValidation] = useState(false);
+  const [showAuctionModal, setShowAuctionModal] = useState(false);
 
   const questionsPerPage = 2;
   const totalPages = Math.ceil(questions.length / questionsPerPage);
@@ -323,6 +325,7 @@ export default function ConditionAssessment() {
                   </button>
                 ) : (
                   <button
+                    onClick={() => setShowAuctionModal(true)}
                     className="inline-flex h-11 items-center justify-center rounded-xl bg-gradient-to-r from-[#f6851f] to-[#e63946] px-6 text-sm font-semibold text-white shadow-lg shadow-orange-500/25 transition hover:scale-[1.01]"
                   >
                     Submit Assessment
@@ -379,6 +382,12 @@ export default function ConditionAssessment() {
           </div>
         </div>
       </div>
+
+      {/* Auction Selection Modal */}
+      <AuctionSelectionModal 
+        isOpen={showAuctionModal} 
+        onClose={setShowAuctionModal} 
+      />
     </>
   );
 }

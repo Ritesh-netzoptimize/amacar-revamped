@@ -20,32 +20,36 @@ import ReviewPage from './Pages/ReviewPage.jsx'
 function App() {
   return (
       <div className="min-h-screen bg-slate-50">
-        <Toaster
-            position="top-right"
-            toastOptions={{
-              duration: 4000,
-              style: {
-                background: '#363636',
-                color: '#fff',
-                borderRadius: '12px',
-                padding: '16px',
-                fontSize: '14px',
-                fontWeight: '500',
+       <Toaster
+          position="top-right"
+          toastOptions={{
+            duration: 4000,
+            style: {
+              background: "#363636",
+              color: "#fff",
+              borderRadius: "12px",
+              padding: "16px",
+              fontSize: "14px",
+              fontWeight: "500",
+            },
+            success: {
+              iconTheme: {
+                primary: "#10b981",
+                secondary: "#fff",
               },
-              success: {
-                iconTheme: {
-                  primary: '#10b981',
-                  secondary: '#fff',
-                },
+            },
+            error: {
+              iconTheme: {
+                primary: "#ef4444",
+                secondary: "#fff",
               },
-              error: {
-                iconTheme: {
-                  primary: '#ef4444',
-                  secondary: '#fff',
-                },
-              },
-            }}
-          />
+            },
+          }}
+          containerStyle={{
+            marginTop: "60px", // 👈 add top margin here
+          }}
+        />
+
         <Header />
 
         <main className="pt-0 bg-white">

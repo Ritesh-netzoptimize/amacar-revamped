@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useEffect } from "react";
 import Header from "@/components/Header/Header";
 import { motion } from "framer-motion";
-import { CheckCircle2, Circle, ChevronLeft, ChevronRight } from "lucide-react";
+import { CheckCircle2, Circle, ChevronLeft, ChevronRight, User, Mail, Phone, Home, MapPin, Building, Landmark, Globe } from "lucide-react";
 import AuctionSelectionModal from "@/components/ui/auction-selection-modal";
 
 export default function ConditionAssessment() {
@@ -104,6 +104,24 @@ export default function ConditionAssessment() {
   const [currentPage, setCurrentPage] = useState(0);
   const [showValidation, setShowValidation] = useState(false);
   const [showAuctionModal, setShowAuctionModal] = useState(false);
+  const [showUserForm, setShowUserForm] = useState(false);
+  const [user, setUser] = useState({
+    fullName: "",
+    email: "",
+    phone: "",
+    address: "",
+    zipcode: "",
+    state: "",
+    city: "",
+    country: "",
+  });
+  const [userErrors, setUserErrors] = useState({});
+
+  const formVariants = {
+    hidden: { opacity: 0, y: 16 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.35 } },
+    exit: { opacity: 0, y: -16, transition: { duration: 0.25 } },
+  };
 
   const questionsPerPage = 2;
   const totalPages = Math.ceil(questions.length / questionsPerPage);
@@ -196,7 +214,7 @@ export default function ConditionAssessment() {
               <button
                 key={opt}
                 onClick={() => selectAnswer(question.key, opt)}
-                className={`group rounded-xl border p-3 text-sm font-medium transition hover:scale-[1.01] ${
+                className={`cursor-pointer group rounded-xl border p-3 text-sm font-medium transition hover:scale-[1.01] ${
                   isSelected
                     ? isPositive
                       ? "border-green-400 bg-green-50 text-green-800"
@@ -217,7 +235,7 @@ export default function ConditionAssessment() {
                   <span>{opt}</span>
                 </div>
                 <p
-                  className={`mt-1 text-xs ${
+                  className={`mt-1 text-left text-xs ${
                     isPositive ? "text-green-600" : "text-rose-600"
                   } opacity-80`}
                 >
@@ -294,44 +312,205 @@ export default function ConditionAssessment() {
 
           {/* Content grid */}
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-            {/* Left: questions */}
+            {/* Left: Conditional content */}
             <div className="lg:col-span-8">
-              <div className="space-y-6">{currentQuestions.map((question, index) => renderQuestion(question, index))}</div>
+              {/* Questions View */}
+              {!showUserForm && (
+                <motion.div initial="hidden" animate="visible" exit="exit" variants={formVariants}>
+                  <div className="space-y-6">{currentQuestions.map((question, index) => renderQuestion(question, index))}</div>
 
-              {/* Navigation buttons */}
-              <div className="mt-6 flex items-center justify-between gap-3">
-                <button
-                  onClick={prevPage}
-                  disabled={currentPage === 0}
-                  className={`inline-flex h-11 items-center justify-center gap-2 rounded-xl border px-4 text-sm font-medium shadow-sm transition hover:scale-[1.01] ${
-                    currentPage === 0
-                      ? "border-slate-200 bg-slate-100 text-slate-400 cursor-not-allowed"
-                      : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
-                  }`}
-                >
-                  <ChevronLeft className="h-4 w-4" /> Previous
-                </button>
+                  {/* Navigation buttons */}
+                  <div className="mt-6 flex items-center justify-between gap-3">
+                    <button
+                      onClick={prevPage}
+                      disabled={currentPage === 0}
+                      className={`cursor-pointer inline-flex h-11 items-center justify-center gap-2 rounded-xl border px-4 text-sm font-medium shadow-sm transition hover:scale-[1.01] ${
+                        currentPage === 0
+                          ? "border-slate-200 bg-slate-100 text-slate-400 cursor-not-allowed"
+                          : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                      }`}
+                    >
+                      <ChevronLeft className="h-4 w-4" /> Previous
+                    </button>
 
-                <div className="text-sm text-slate-600">
-                  Page {currentPage + 1} of {totalPages}
-                </div>
+                    <div className="text-sm text-slate-600">
+                      Page {currentPage + 1} of {totalPages}
+                    </div>
 
-                {currentPage < totalPages - 1 ? (
-                  <button
-                    onClick={nextPage}
-                    className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#f6851f] to-[#e63946] px-6 text-sm font-semibold text-white shadow-lg shadow-orange-500/25 transition hover:scale-[1.01]"
-                  >
-                    Next <ChevronRight className="h-4 w-4" />
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => setShowAuctionModal(true)}
-                    className="inline-flex h-11 items-center justify-center rounded-xl bg-gradient-to-r from-[#f6851f] to-[#e63946] px-6 text-sm font-semibold text-white shadow-lg shadow-orange-500/25 transition hover:scale-[1.01]"
-                  >
-                    Submit Assessment
-                  </button>
-                )}
-              </div>
+                    {currentPage < totalPages - 1 ? (
+                      <button
+                        onClick={nextPage}
+                        className="cursor-pointer inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#f6851f] to-[#e63946] px-6 text-sm font-semibold text-white shadow-lg shadow-orange-500/25 transition hover:scale-[1.01]"
+                      >
+                        Next <ChevronRight className="h-4 w-4" />
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => setShowUserForm(true)}
+                        className="cursor-pointer inline-flex h-11 items-center justify-center rounded-xl bg-gradient-to-r from-[#f6851f] to-[#e63946] px-6 text-sm font-semibold text-white shadow-lg shadow-orange-500/25 transition hover:scale-[1.01]"
+                      >
+                        Submit
+                      </button>
+                    )}
+                  </div>
+                </motion.div>
+              )}
+
+              {/* User Details View */}
+              {showUserForm && (
+                <motion.div initial="hidden" animate="visible" exit="exit" variants={formVariants} className="rounded-2xl border border-white/60 bg-white/70 p-6 shadow-xl backdrop-blur-xl">
+                  <div className="mb-6">
+                    <h2 className="text-xl font-semibold text-slate-900">Your Details</h2>
+                    <p className="text-sm text-slate-600">Please provide your contact and address information to proceed.</p>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Full Name */}
+                    <div className="grid gap-2">
+                      <label className="text-sm font-medium text-slate-800">Full Name</label>
+                      <div className="relative">
+                        <User className="h-4 w-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                        <input
+                          value={user.fullName}
+                          onChange={(e) => setUser({ ...user, fullName: e.target.value })}
+                          placeholder="Enter your full name"
+                          className={`h-11 w-full rounded-xl border bg-white pl-9 pr-3 text-sm outline-none transition-shadow ${userErrors.fullName ? "border-red-300" : "border-slate-200 focus:shadow-[0_0_0_4px_rgba(246,133,31,0.18)]"}`}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Email */}
+                    <div className="grid gap-2">
+                      <label className="text-sm font-medium text-slate-800">Email Address</label>
+                      <div className="relative">
+                        <Mail className="h-4 w-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                        <input
+                          value={user.email}
+                          onChange={(e) => setUser({ ...user, email: e.target.value })}
+                          placeholder="name@example.com"
+                          className={`h-11 w-full rounded-xl border bg-white pl-9 pr-3 text-sm outline-none transition-shadow ${userErrors.email ? "border-red-300" : "border-slate-200 focus:shadow-[0_0_0_4px_rgba(246,133,31,0.18)]"}`}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Phone */}
+                    <div className="grid gap-2">
+                      <label className="text-sm font-medium text-slate-800">Phone Number</label>
+                      <div className="relative">
+                        <Phone className="h-4 w-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                        <input
+                          value={user.phone}
+                          onChange={(e) => setUser({ ...user, phone: e.target.value.replace(/[^0-9+\-\s]/g, "") })}
+                          placeholder="e.g. +1 555 123 4567"
+                          className={`h-11 w-full rounded-xl border bg-white pl-9 pr-3 text-sm outline-none transition-shadow ${userErrors.phone ? "border-red-300" : "border-slate-200 focus:shadow-[0_0_0_4px_rgba(246,133,31,0.18)]"}`}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Address */}
+                    <div className="md:col-span-2 grid gap-2">
+                      <label className="text-sm font-medium text-slate-800">Address</label>
+                      <div className="relative">
+                        <Home className="h-4 w-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                        <input
+                          value={user.address}
+                          onChange={(e) => setUser({ ...user, address: e.target.value })}
+                          placeholder="Street address"
+                          className={`h-11 w-full rounded-xl border bg-white pl-9 pr-3 text-sm outline-none transition-shadow ${userErrors.address ? "border-red-300" : "border-slate-200 focus:shadow-[0_0_0_4px_rgba(246,133,31,0.18)]"}`}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Zipcode */}
+                    <div className="grid gap-2">
+                      <label className="text-sm font-medium text-slate-800">Zipcode</label>
+                      <div className="relative">
+                        <MapPin className="h-4 w-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                        <input
+                          value={user.zipcode}
+                          onChange={(e) => setUser({ ...user, zipcode: e.target.value.replace(/[^0-9]/g, "").slice(0, 10) })}
+                          placeholder="e.g. 94016"
+                          className={`h-11 w-full rounded-xl border bg-white pl-9 pr-3 text-sm outline-none transition-shadow ${userErrors.zipcode ? "border-red-300" : "border-slate-200 focus:shadow-[0_0_0_4px_rgba(246,133,31,0.18)]"}`}
+                        />
+                      </div>
+                    </div>
+
+                    {/* State */}
+                    <div className="grid gap-2">
+                      <label className="text-sm font-medium text-slate-800">State</label>
+                      <div className="relative">
+                        <Landmark className="h-4 w-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                        <input
+                          value={user.state}
+                          onChange={(e) => setUser({ ...user, state: e.target.value })}
+                          placeholder="State"
+                          className={`h-11 w-full rounded-xl border bg-white pl-9 pr-3 text-sm outline-none transition-shadow ${userErrors.state ? "border-red-300" : "border-slate-200 focus:shadow-[0_0_0_4px_rgba(246,133,31,0.18)]"}`}
+                        />
+                      </div>
+                    </div>
+
+                    {/* City */}
+                    <div className="grid gap-2">
+                      <label className="text-sm font-medium text-slate-800">City</label>
+                      <div className="relative">
+                        <Building className="h-4 w-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                        <input
+                          value={user.city}
+                          onChange={(e) => setUser({ ...user, city: e.target.value })}
+                          placeholder="City"
+                          className={`h-11 w-full rounded-xl border bg-white pl-9 pr-3 text-sm outline-none transition-shadow ${userErrors.city ? "border-red-300" : "border-slate-200 focus:shadow-[0_0_0_4px_rgba(246,133,31,0.18)]"}`}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Country */}
+                    <div className="grid gap-2">
+                      <label className="text-sm font-medium text-slate-800">Country</label>
+                      <div className="relative">
+                        <Globe className="h-4 w-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                        <input
+                          value={user.country}
+                          onChange={(e) => setUser({ ...user, country: e.target.value })}
+                          placeholder="Country"
+                          className={`h-11 w-full rounded-xl border bg-white pl-9 pr-3 text-sm outline-none transition-shadow ${userErrors.country ? "border-red-300" : "border-slate-200 focus:shadow-[0_0_0_4px_rgba(246,133,31,0.18)]"}`}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Submit Assessment at bottom */}
+                  <div className="mt-6 flex items-center justify-between gap-3">
+                    <button
+                      onClick={() => setShowUserForm(false)}
+                      className="cursor-pointer inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 shadow-sm transition hover:scale-[1.01]"
+                    >
+                      <ChevronLeft className="h-4 w-4" /> Back to Questions
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        // basic validation
+                        const errs = {};
+                        if (!user.fullName) errs.fullName = true;
+                        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(user.email)) errs.email = true;
+                        if (!user.phone || user.phone.replace(/\D/g, "").length < 7) errs.phone = true;
+                        if (!user.address) errs.address = true;
+                        if (!user.zipcode) errs.zipcode = true;
+                        if (!user.state) errs.state = true;
+                        if (!user.city) errs.city = true;
+                        if (!user.country) errs.country = true;
+                        setUserErrors(errs);
+                        if (Object.keys(errs).length === 0) {
+                          setShowAuctionModal(true);
+                        }
+                      }}
+                      className="cursor-pointer inline-flex h-11 items-center justify-center rounded-xl bg-gradient-to-r from-[#f6851f] to-[#e63946] px-6 text-sm font-semibold text-white shadow-lg shadow-orange-500/25 transition hover:scale-[1.01]"
+                    >
+                      Submit Assessment
+                    </button>
+                  </div>
+                </motion.div>
+              )}
             </div>
 
             {/* Right: summary */}

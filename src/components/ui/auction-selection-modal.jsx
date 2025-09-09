@@ -1,6 +1,6 @@
-import React from "react"
+import React, { useState } from "react"
 import { motion } from "framer-motion"
-import { MapPin, Globe, Clock, DollarSign, ArrowRight, CheckCircle } from "lucide-react"
+import { MapPin, Globe, Clock, DollarSign, CheckCircle, Check } from "lucide-react"
 import {
   Dialog,
   DialogContent,
@@ -8,10 +8,12 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog"
-import { useState } from "react"
 import toast from "react-hot-toast"
+import { useNavigate } from "react-router-dom"
 export default function AuctionSelectionModal({ isOpen, onClose }) {
   const [isAgreed, setIsAgreed] = useState(false)
+  const [selectedId, setSelectedId] = useState(null)
+  const navigate = useNavigate()
   const auctionOptions = [
     {
       id: "local",
@@ -52,18 +54,21 @@ export default function AuctionSelectionModal({ isOpen, onClose }) {
       route: "/national-auction"
     }
   ]
-
-
-  const handleOptionClick = (route) => {
+  const handleGo = () => {
+    if (!selectedId) {
+      toast.error("Please select an auction type.")
+      return
+    }
     if (!isAgreed) {
       toast.error("Please agree to the Terms of Service and Privacy Policy before continuing.")
       return
     }
+    const selected = auctionOptions.find(o => o.id === selectedId)
     toast.success("Redirecting to your selected auction...")
     setTimeout(() => {
-      onClose()
-      window.location.href = route
-    }, 1000)
+      onClose(false)
+      navigate(selected?.route || "/local-auction")
+    }, 600)
   }
   
 
@@ -98,10 +103,11 @@ export default function AuctionSelectionModal({ isOpen, onClose }) {
                   transition={{ duration: 0.3, delay: index * 0.1 }}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  onClick={() => handleOptionClick(option.route)}
+                  onClick={() => setSelectedId(option.id)}
                   className={`
-                    relative cursor-pointer group rounded-2xl border-2 ${option.borderColor} 
-                    ${option.bgColor} p-6 transition-all duration-300 hover:shadow-lg
+                    relative cursor-pointer group rounded-2xl p-6 shadow-lg
+                    ${option.bgColor}
+                    ${selectedId === option.id ? 'border-2 border-green-400 ring-2 ring-green-200' : `${option.borderColor} border`}
                   `}
                 >
                   {/* Header */}
@@ -119,7 +125,13 @@ export default function AuctionSelectionModal({ isOpen, onClose }) {
                         </p>
                       </div>
                     </div>
-                    <ArrowRight className="h-5 w-5 text-slate-400 group-hover:text-slate-600 transition-colors" />
+                    {selectedId === option.id ? (
+                      <div className="flex items-center gap-2 text-green-600">
+                        <Check className="h-5 w-5" />
+                      </div>
+                    ) : (
+                      <div className="h-5 w-5" />
+                    )}
                   </div>
 
                   {/* Features */}
@@ -173,11 +185,22 @@ export default function AuctionSelectionModal({ isOpen, onClose }) {
               type="checkbox"
               checked={isAgreed}
               onChange={(e) => setIsAgreed(e.target.checked)}
-              className="h-4 w-4"
+              className="h-4 w-4 cursor-pointer"
             />
             <p className="text-xs text-slate-600">
               I agree to the <a href="/terms-of-service" className="underline">Terms of Service</a> and <a href="/privacy-policy" className="underline">Privacy Policy</a>. I understand that my vehicle information will be shared with participating dealers for the auction process.
             </p>
+          </div>
+          {/* Footer CTA */}
+          <div className="mt-6 flex items-center justify-end">
+            <button
+              onClick={handleGo}
+              className={`cursor-pointer inline-flex h-11 items-center justify-center rounded-xl px-6 text-sm font-semibold text-white shadow-lg transition hover:scale-[1.01]
+                ${selectedId && isAgreed ? 'bg-slate-900 hover:bg-slate-800' : 'bg-slate-400 cursor-not-allowed'}`}
+              disabled={!selectedId || !isAgreed}
+            >
+              Go →
+            </button>
           </div>
         </div>
       </DialogContent>

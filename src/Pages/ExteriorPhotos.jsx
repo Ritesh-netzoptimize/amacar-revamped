@@ -407,7 +407,7 @@ export default function ExteriorPhotos() {
         <div className="flex justify-between">
           <motion.button
             onClick={handlePrevStep}
-            className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 shadow-sm transition hover:scale-[1.01]"
+            className="cursor-pointer inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 shadow-sm transition hover:scale-[1.01]"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
           >

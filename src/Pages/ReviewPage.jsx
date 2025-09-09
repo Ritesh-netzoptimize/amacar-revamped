@@ -386,7 +386,7 @@ export default function ReviewPage() {
             >
               <motion.button
                 onClick={handleGoBack}
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-8 text-sm font-medium text-slate-700 shadow-sm transition hover:scale-[1.02] hover:shadow-md"
+                className="cursor-pointer inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-8 text-sm font-medium text-slate-700 shadow-sm transition hover:scale-[1.02] hover:shadow-md"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
@@ -396,7 +396,7 @@ export default function ReviewPage() {
               
               <motion.button
                 onClick={handleLaunchAuction}
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#f6851f] to-[#e63946] px-8 text-sm font-semibold text-white shadow-lg shadow-orange-500/25 transition hover:scale-[1.02] hover:shadow-xl"
+                className="cursor-pointer inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#f6851f] to-[#e63946] px-8 text-sm font-semibold text-white shadow-lg shadow-orange-500/25 transition hover:scale-[1.02] hover:shadow-xl"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >

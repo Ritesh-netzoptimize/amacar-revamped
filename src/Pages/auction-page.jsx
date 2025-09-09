@@ -118,7 +118,7 @@ export default function AuctionPage() {
                                     <button
                                         type="button"
                                         onClick={() => setShowAll(!showAll)}
-                                        className={`h-9  rounded-xl border px-3 text-xs font-medium transition ${showAll ? 'border-slate-300 bg-white text-slate-900' : 'border-slate-200 bg-white text-slate-700 hover:scale-[1.01]'}`}
+                                        className={`cursor-pointer h-9  rounded-xl border px-3 text-xs font-medium transition ${showAll ? 'border-slate-300 bg-white text-slate-900' : 'border-slate-200 bg-white text-slate-700 hover:scale-[1.01]'}`}
                                     >
                                         {showAll ? 'Show by steps' : 'Show all fields'}
                                     </button>
@@ -181,7 +181,7 @@ export default function AuctionPage() {
                                                                             key={opt}
                                                                             type="button"
                                                                             onClick={() => { handleChange(key, opt); handleBlur(key) }}
-                                                                            className={`group inline-flex items-center gap-2 rounded-full border px-2.5 py-1.5 text-xs font-medium ${selected ? "border-[#f6851f] bg-orange-50 text-slate-900" : "border-slate-200 bg-white text-slate-700"}`}
+                                                                            className={`cursor-pointer group inline-flex items-center gap-2 rounded-full border px-2.5 py-1.5 text-xs font-medium ${selected ? "border-[#f6851f] bg-orange-50 text-slate-900" : "border-slate-200 bg-white text-slate-700"}`}
                                                                         >
                                                                             <span className={`inline-block h-4 w-4 rounded-full ${colorMap[opt] || "bg-slate-400"}`}></span>
                                                                             {opt}
@@ -200,7 +200,7 @@ export default function AuctionPage() {
                                                                             key={opt}
                                                                             type="button"
                                                                             onClick={() => { handleChange(key, opt); handleBlur(key) }}
-                                                                            className={`flex items-center gap-2 rounded-xl border p-2.5 text-xs font-medium transition ${selected ? "border-[#f6851f] bg-orange-50 text-slate-900" : "border-slate-200 bg-white text-slate-700 hover:border-slate-300"}`}
+                                                                            className={`cursor-pointer flex items-center gap-2 rounded-xl border p-2.5 text-xs font-medium transition ${selected ? "border-[#f6851f] bg-orange-50 text-slate-900" : "border-slate-200 bg-white text-slate-700 hover:border-slate-300"}`}
                                                                         >
                                                                             <Car className="h-4 w-4 text-slate-500" /> {opt}
                                                                         </button>
@@ -218,7 +218,7 @@ export default function AuctionPage() {
                                                                             key={opt}
                                                                             type="button"
                                                                             onClick={() => { handleChange(key, opt); handleBlur(key) }}
-                                                                            className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium transition ${selected ? "border-[#f6851f] bg-orange-50 text-slate-900" : "border-slate-200 bg-white text-slate-700 hover:border-slate-300"}`}
+                                                                            className={`cursor-pointer inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium transition ${selected ? "border-[#f6851f] bg-orange-50 text-slate-900" : "border-slate-200 bg-white text-slate-700 hover:border-slate-300"}`}
                                                                         >
                                                                             <Cog className="h-4 w-4 text-slate-500" /> {opt}
                                                                         </button>
@@ -262,7 +262,7 @@ export default function AuctionPage() {
                                     <button
                                         type="button"
                                         onClick={() => (step === 0 ? history.back() : setStep(step - 1))}
-                                        className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 shadow-sm transition hover:scale-[1.01] "
+                                        className="cursor-pointer inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 shadow-sm transition hover:scale-[1.01] "
                                     >
                                         <ChevronLeft className="h-4 w-4" /> {step === 0 ? "Back" : "Previous"}
                                     </button>
@@ -276,7 +276,7 @@ export default function AuctionPage() {
                                                 const ok = keys.every((k) => validate(k, values[k]))
                                                 if (ok) setStep(step + 1)
                                             }}
-                                            className="inline-flex h-11 items-center justify-center rounded-xl bg-gradient-to-r from-[#f6851f] to-[#e63946] px-6 text-sm font-semibold text-white shadow-lg shadow-orange-500/25 transition hover:scale-[1.01] "
+                                            className="cursor-pointer inline-flex h-11 items-center justify-center rounded-xl bg-gradient-to-r from-[#f6851f] to-[#e63946] px-6 text-sm font-semibold text-white shadow-lg shadow-orange-500/25 transition hover:scale-[1.01] "
                                         >
                                             Next
                                         </button>

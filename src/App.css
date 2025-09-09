@@ -1,16 +1,18 @@
 /* Default font for whole site */
 body {
-  font-family: 'Roboto', sans-serif;
+  font-family: 'Poppins', sans-serif;
   margin: 0;
   padding: 0;
 }
 
-/* Headings use Roboto Condensed */
+/* Headings use Poppins SemiBold/Bold look */
 h1, h2, h3, h4, h5, h6 {
-  font-family: 'Roboto Condensed', sans-serif;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600; /* adjust to 500, 600, or 700 as per your design */
 }
 
 /* Content text (paragraphs, lists, links, spans, etc.) */
 p, span, li, a, blockquote {
-  font-family: 'Roboto', sans-serif;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 400;
 }

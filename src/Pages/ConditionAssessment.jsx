@@ -405,19 +405,7 @@ export default function ConditionAssessment() {
                       </div>
                     </div>
 
-                    {/* Address */}
-                    <div className="md:col-span-2 grid gap-2">
-                      <label className="text-sm font-medium text-slate-800">Address</label>
-                      <div className="relative">
-                        <Home className="h-4 w-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                        <input
-                          value={user.address}
-                          onChange={(e) => setUser({ ...user, address: e.target.value })}
-                          placeholder="Street address"
-                          className={`h-11 w-full rounded-xl border bg-white pl-9 pr-3 text-sm outline-none transition-shadow ${userErrors.address ? "border-red-300" : "border-slate-200 focus:shadow-[0_0_0_4px_rgba(246,133,31,0.18)]"}`}
-                        />
-                      </div>
-                    </div>
+                    
 
                     {/* Zipcode */}
                     <div className="grid gap-2">
@@ -461,19 +449,7 @@ export default function ConditionAssessment() {
                       </div>
                     </div>
 
-                    {/* Country */}
-                    <div className="grid gap-2">
-                      <label className="text-sm font-medium text-slate-800">Country</label>
-                      <div className="relative">
-                        <Globe className="h-4 w-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                        <input
-                          value={user.country}
-                          onChange={(e) => setUser({ ...user, country: e.target.value })}
-                          placeholder="Country"
-                          className={`h-11 w-full rounded-xl border bg-white pl-9 pr-3 text-sm outline-none transition-shadow ${userErrors.country ? "border-red-300" : "border-slate-200 focus:shadow-[0_0_0_4px_rgba(246,133,31,0.18)]"}`}
-                        />
-                      </div>
-                    </div>
+                   
                   </div>
 
                   {/* Submit Assessment at bottom */}
@@ -492,11 +468,9 @@ export default function ConditionAssessment() {
                         if (!user.fullName) errs.fullName = true;
                         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(user.email)) errs.email = true;
                         if (!user.phone || user.phone.replace(/\D/g, "").length < 7) errs.phone = true;
-                        if (!user.address) errs.address = true;
                         if (!user.zipcode) errs.zipcode = true;
                         if (!user.state) errs.state = true;
                         if (!user.city) errs.city = true;
-                        if (!user.country) errs.country = true;
                         setUserErrors(errs);
                         if (Object.keys(errs).length === 0) {
                           setShowAuctionModal(true);

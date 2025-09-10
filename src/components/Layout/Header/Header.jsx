@@ -1,8 +1,27 @@
 import { useState } from 'react'
 import './header.css'
+import LoginModal from '@/components/ui/LoginModal'
 
 export default function Header() {
     const [open, setOpen] = useState(false)
+    const [loginModalOpen, setLoginModalOpen] = useState(false)
+
+    const handleLoginClick = (e) => {
+        e.preventDefault()
+        setLoginModalOpen(true)
+        // Close mobile menu if it's open
+        setOpen(false)
+      }
+    
+      const handleForgotPassword = () => {
+        console.log("Open forgot password modal")
+        // You can implement forgot password modal here
+      }
+    
+      const handleRegister = () => {
+        console.log("Open register modal")
+        // You can implement register modal here
+      }
 
     return (
         <header className="site-header">
@@ -26,7 +45,7 @@ export default function Header() {
                     {/* right: actions */}
                     <div style={{ display: 'flex', justifyContent: 'flex-end', minWidth: 180 }}>
                         <div className="actions-desktop">
-                            <a className="btn-login" href="#">Login / Register</a>
+                            <a className="btn-login" href="#" onClick={handleLoginClick}>Login / Register</a>
                         </div>
 
                         <div className="mobile-toggle" style={{ display: 'flex', alignItems: 'center', marginLeft: 8 }}>
@@ -51,10 +70,18 @@ export default function Header() {
                         <a className="nav-link-mobile" href="#">Our Vision</a>
                     </nav>
                     <div style={{ marginTop: 12 }}>
-                        <a className="btn-login-mobile" href="#">Login / Register</a>
+                        <a className="btn-login-mobile" href="#" onClick={handleLoginClick}>Login / Register</a>
                     </div>
                 </div>
             </div>
+
+            {/* Login Modal */}
+            <LoginModal 
+                isOpen={loginModalOpen}
+                onClose={setLoginModalOpen}
+                onForgotPassword={handleForgotPassword}
+                onRegister={handleRegister}
+            />
         </header>
     )
 }

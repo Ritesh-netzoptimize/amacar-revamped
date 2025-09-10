@@ -1,9 +1,7 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Car, Clock, Users, DollarSign, Eye, MoreVertical, Play, Pause } from 'lucide-react';
 import { formatCurrency, formatTimeRemaining } from '../lib/utils';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-
 
 const LiveAuctionsPage = () => {
   const [auctions, setAuctions] = useState([
@@ -55,6 +53,7 @@ const LiveAuctionsPage = () => {
   ]);
 
   const [selectedAuction, setSelectedAuction] = useState(null);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -76,18 +75,67 @@ const LiveAuctionsPage = () => {
     },
   };
 
+  const dropdownVariants = {
+    hidden: { opacity: 0, scale: 0.95, y: -10 },
+    visible: {
+      opacity: 1,
+      scale: 1,
+      y: 0,
+      transition: { duration: 0.2, ease: "easeOut" },
+    },
+    exit: {
+      opacity: 0,
+      scale: 0.95,
+      y: -10,
+      transition: { duration: 0.15, ease: "easeIn" },
+    },
+  };
+
+  const dropdownItemVariants = {
+    hidden: { opacity: 0, x: -10 },
+    visible: {
+      opacity: 1,
+      x: 0,
+      transition: { duration: 0.2, ease: "easeOut" },
+    },
+  };
+
   const handleEndAuction = (auctionId) => {
-    setAuctions(prev => 
-      prev.map(auction => 
-        auction.id === auctionId 
-          ? { ...auction, status: 'ended' }
-          : auction
+    setAuctions((prev) =>
+      prev.map((auction) =>
+        auction.id === auctionId ? { ...auction, status: 'ended' } : auction
       )
     );
+    setIsDropdownOpen(false);
+  };
+
+  const handlePauseAuction = (auctionId) => {
+    setAuctions((prev) =>
+      prev.map((auction) =>
+        auction.id === auctionId ? { ...auction, status: 'paused' } : auction
+      )
+    );
+    setIsDropdownOpen(false);
+  };
+
+  const handleViewDetails = (auctionId) => {
+    setSelectedAuction(auctionId);
+    setIsDropdownOpen(false);
+  };
+
+  const toggleDropdown = (auctionId) => {
+    setSelectedAuction(auctionId);
+    setIsDropdownOpen(prev => prev && selectedAuction === auctionId ? false : true);
+  };
+
+  const handleClickOutside = (e) => {
+    if (!e.target.closest('.dropdown-container')) {
+      setIsDropdownOpen(false);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-hero p-8 ">
+    <div className="min-h-screen bg-gradient-hero p-8">
       <div className="max-w-8xl mx-auto">
         <motion.div
           variants={containerVariants}
@@ -160,8 +208,7 @@ const LiveAuctionsPage = () => {
             <motion.div
               key={auction.id}
               variants={itemVariants}
-              className="card overflow-hidden hover:shadow-medium "
-              // whileHover={{ scale: 1.02 }}
+              className="card overflow-hidden hover:shadow-medium relative"
             >
               {/* Image */}
               <div className="relative h-48 bg-neutral-200">
@@ -173,38 +220,64 @@ const LiveAuctionsPage = () => {
                     LIVE
                   </span>
                 </div>
-
-
-                <div className="absolute top-4 right-4">
-      <DropdownMenu>
-        {/* Trigger: Three dots button */}
-        <DropdownMenuTrigger asChild>
-          <button className="cursor-pointer p-2 bg-white/80 hover:bg-white rounded-full transition-colors">
-            <MoreVertical className="w-4 h-4" />
-          </button>
-        </DropdownMenuTrigger>
-
-        {/* Dropdown content */}
-        <DropdownMenuContent
-          side="bottom"   // appear below the button
-          align="end"     // expand to the left
-          className="w-56 p-2 shadow-md bg-white rounded-md space-y-2"
-        >
-          <DropdownMenuItem className={"cursor-pointer [&[data-highlighted]]:bg-[var(--brand-orange)] [&[data-highlighted]]:text-white"}>
-            <button className="cursor-pointer hover:text-white">View details</button>
-          </DropdownMenuItem>
-
-          <DropdownMenuItem className={"cursor-pointer [&[data-highlighted]]:bg-[var(--brand-orange)] [&[data-highlighted]]:text-white"}>
-            <button className="cursor-pointer hover:text-white ">End auction</button>
-          </DropdownMenuItem>
-
-          <DropdownMenuItem className={"cursor-pointer [&[data-highlighted]]:bg-[var(--brand-orange)] [&[data-highlighted]]:text-white"}>
-           <button className="cursor-pointer hover:text-white ">Pause Auction</button>
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </div>
-                
+                <div className="absolute top-4 right-4 dropdown-container">
+                  <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                    <button 
+                      onClick={() => toggleDropdown(auction.id)}
+                      className="cursor-pointer p-2 bg-white/90 hover:bg-white rounded-full shadow-sm transition-colors duration-200"
+                    >
+                      <MoreVertical className="w-4 h-4 text-neutral-600" />
+                    </button>
+                  </motion.div>
+                  <AnimatePresence>
+                    {isDropdownOpen && selectedAuction === auction.id && (
+                      <motion.div
+                        variants={dropdownVariants}
+                        initial="hidden"
+                        animate="visible"
+                        exit="exit"
+                        className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-neutral-200 z-20"
+                      >
+                        <motion.div
+                          variants={dropdownItemVariants}
+                          className="px-2 py-1"
+                        >
+                          <button
+                            onClick={() => handleViewDetails(auction.id)}
+                            className="w-full text-left px-4 py-2 text-sm text-neutral-800 hover:bg-primary-50 hover:text-primary-600 rounded-md transition-colors duration-150 flex items-center space-x-3"
+                          >
+                            <Eye className="w-4 h-4" />
+                            <span>View Details</span>
+                          </button>
+                        </motion.div>
+                        <motion.div
+                          variants={dropdownItemVariants}
+                          className="px-2 py-1"
+                        >
+                          <button
+                            onClick={() => handleEndAuction(auction.id)}
+                            className="w-full text-left px-4 py-2 text-sm text-neutral-800 hover:bg-red-50 hover:text-red-600 rounded-md transition-colors duration-150 flex items-center space-x-3"
+                          >
+                            <Pause className="w-4 h-4" />
+                            <span>End Auction</span>
+                          </button>
+                        </motion.div>
+                        <motion.div
+                          variants={dropdownItemVariants}
+                          className="px-2 py-1"
+                        >
+                          <button
+                            onClick={() => handlePauseAuction(auction.id)}
+                            className="w-full text-left px-4 py-2 text-sm text-neutral-800 hover:bg-yellow-50 hover:text-yellow-600 rounded-md transition-colors duration-150 flex items-center space-x-3"
+                          >
+                            <Play className="w-4 h-4" />
+                            <span>Pause Auction</span>
+                          </button>
+                        </motion.div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
               </div>
 
               {/* Content */}
@@ -250,7 +323,7 @@ const LiveAuctionsPage = () => {
                   </button>
                   <button className="btn-primary flex items-center justify-center space-x-2">
                     <Play className="w-4 h-4" />
-                    <span>Pause auction</span>
+                    <span>Pause Auction</span>
                   </button>
                 </div>
               </div>
@@ -275,6 +348,15 @@ const LiveAuctionsPage = () => {
           </motion.div>
         )}
       </div>
+      {isDropdownOpen && (
+        <motion.div
+          className="fixed inset-0 z-10"
+          onClick={handleClickOutside}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+        />
+      )}
     </div>
   );
 };

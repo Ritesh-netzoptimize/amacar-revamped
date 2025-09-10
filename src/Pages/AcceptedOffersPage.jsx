@@ -58,7 +58,7 @@ const AcceptedOffersPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-hero p-8 ">
+    <div className="min-h-screen bg-gradient-hero p-8">
       <div className="max-w-8xl mx-auto">
         <motion.div
           variants={containerVariants}
@@ -111,14 +111,14 @@ const AcceptedOffersPage = () => {
 
               {/* Progress Steps */}
               <div className="mb-6">
-                <div className="flex items-center justify-between">
+                <div className="relative flex items-center justify-between">
                   {statusSteps.map((step, index) => {
                     const Icon = step.icon;
                     const isActive = step.key === offer.status;
                     const isCompleted = statusSteps.findIndex(s => s.key === offer.status) > index;
-                    
+
                     return (
-                      <div key={step.key} className="flex flex-col items-center">
+                      <div key={step.key} className="flex flex-col items-center flex-1 relative">
                         <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 ${
                           isCompleted 
                             ? 'bg-success text-white' 
@@ -128,15 +128,21 @@ const AcceptedOffersPage = () => {
                         }`}>
                           <Icon className="w-5 h-5" />
                         </div>
-                        <span className={`text-xs font-medium ${
+                        <span className={`text-xs font-medium text-center ${
                           isActive ? 'text-primary-600' : 'text-neutral-500'
                         }`}>
                           {step.label}
                         </span>
                         {index < statusSteps.length - 1 && (
-                          <div className={`absolute w-full h-0.5 top-5 left-1/2 transform -translate-y-1/2 ${
-                            isCompleted ? 'bg-success' : 'bg-neutral-200'
-                          }`} style={{ width: 'calc(100% - 2.5rem)' }} />
+                          <div
+                            className={`absolute top-5 h-0.5 ${
+                              isCompleted ? 'bg-success' : 'bg-neutral-200'
+                            }`}
+                            style={{
+                              width: 'calc(100% - 40px)',
+                              left: 'calc(50% + 20px)',
+                            }}
+                          />
                         )}
                       </div>
                     );

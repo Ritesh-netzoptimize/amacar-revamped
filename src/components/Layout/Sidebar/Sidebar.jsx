@@ -9,276 +9,257 @@ import {
   User, 
   ChevronLeft, 
   ChevronRight,
-  Home,
-  Bell,
-  Settings,
-  Hamburger,
-  HamburgerIcon,
-  LucideHamburger,
-  Menu,
   LayoutDashboard,
   TrendingUp,
   Hourglass,
   FileText,
   LogOut,
-  Plus,
-  icons,
-  HomeIcon
+  Plus
 } from 'lucide-react';
+import Modal from '@/components/ui/modal';
 
 const Sidebar = ({ isCollapsed, onToggle }) => {
   const location = useLocation();
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const navigation = [
-    {
-      name: 'Amacar',
-      href: '/',
-      icon: HomeIcon,
-    },
-    {
-      name: 'Dashboard',
-      href: '/dashboard',
-      icon: LayoutDashboard,
-      badge: null,
-    },
-    {
-      name: 'Live Auctions',
-      href: '/auctions',
-      icon: TrendingUp,
-      badge: 2,
-    },
-    {
-      name: 'Pending Offers',
-      href: '/pending-offers',
-      icon: Hourglass,
-      badge: 3,
-    },
-    {
-      name: 'Previous Offers',
-      href: '/offers',
-      icon: FileText,
-      badge: null,
-    },
-    {
-      name: 'Accepted Offers',
-      href: '/accepted',
-      icon: CheckCircle,
-      badge: 1,
-    },
-    {
-      name: 'My Appointments',
-      href: '/appointments',
-      icon: Calendar,
-      badge: 2,
-    },
-    {
-      name: 'Add Vehicle',
-      href: '/add-vehicle',
-      icon: Plus,
-
+    { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+    { name: 'Live Auctions', href: '/auctions', icon: TrendingUp },
+    { name: 'Pending Offers', href: '/pending-offers', icon: Hourglass },
+    { name: 'Previous Offers', href: '/offers', icon: FileText },
+    { name: 'Accepted Offers', href: '/accepted', icon: CheckCircle },
+    { name: 'My Appointments', href: '/appointments', icon: Calendar },
+    { 
+      name: 'Add Vehicle', 
+      icon: Plus, 
+      action: () => setIsModalOpen(true) 
     }
   ];
 
   const bottomNavigation = [
-    {
-      name: "Profile",
-      href: "/profile",
-      icon: User,
-    },
-    {
-      name: "Logout",
-      icon: LogOut,
+    { name: 'Profile', href: '/profile', icon: User },
+    { 
+      name: 'Logout', 
+      icon: LogOut, 
       action: () => {
-        // Put your logout logic here
-        console.log("Logging out...");
-        // Example: clear auth token, redirect, etc.
-      },
-    },
+        console.log('Logging out...');
+      }
+    }
   ];
 
   const containerVariants = {
-    open: { width: '16rem' },
-    closed: { width: '4rem' },
+    open: { width: '16rem', transition: { type: 'spring', stiffness: 200, damping: 25 } },
+    closed: { width: '4rem', transition: { type: 'spring', stiffness: 200, damping: 25 } }
   };
 
   const itemVariants = {
-    open: { opacity: 1, x: 0 },
-    closed: { opacity: 0, x: -20 },
+    open: { opacity: 1, x: 0, transition: { duration: 0.3, ease: 'easeOut' } },
+    closed: { opacity: 0, x: -20, transition: { duration: 0.2, ease: 'easeIn' } }
   };
 
   return (
-    <motion.aside
-      variants={containerVariants}
-      animate={isCollapsed ? 'closed' : 'open'}
-      className="fixed left-0 top-[1px] bottom-0 bg-white border-r border-neutral-200 z-40 transition-all duration-300"
-    >
-      
-      <div className="flex flex-col h-full">
-      <Link
-  key="home"
-  to="/"
-  className={`group flex items-center px-3 py-2.5 rounded-lg transition-all duration-200 ${
-    isCollapsed ? "justify-start" : "justify-center"
-  }`}
->
-  <div className="relative">
-    {isCollapsed && <Link to={'/'}><HomeIcon className="w-5 h-5 m-2 flex-shrink-0" /></Link>}
-  </div>
-
-  {!isCollapsed && (
-    <AnimatePresence>
-      <motion.div
-        variants={itemVariants}
-        initial="closed"
-        animate="open"
-        exit="closed"
-        className="flex-1 flex items-center justify-center"
+    <>
+      <motion.aside
+        variants={containerVariants}
+        animate={isCollapsed ? 'closed' : 'open'}
+        className="fixed left-0 top-0 bottom-0 bg-white border-r border-neutral-200 z-40 shadow-sm"
       >
-        {/* Add your label/text here */}
-        <a href="/"><img className='h-10 w-32' src="src\assets\original_logo.jpg" alt="" /></a>
-      </motion.div>
-    </AnimatePresence>
-  )}
-</Link>
-
-        {/* Toggle Button */}
-        <div className="p-4 border-b border-neutral-200">
+        <div className="flex flex-col h-full relative">
+          {/* Toggle Button - Fixed position */}
           <button
             onClick={onToggle}
-            className="cursor-pointer w-full flex items-center justify-center p-2 hover:bg-neutral-100 rounded-lg transition-colors"
+            className={`absolute top-6 z-50 p-1.5 bg-white border border-neutral-200 rounded-full shadow-sm hover:bg-neutral-50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-200 ${
+              isCollapsed ? 'right-[-12px]' : 'right-3'
+            }`}
           >
             {isCollapsed ? (
-              <Menu className="w-5 h-5 text-neutral-600" />
+              <ChevronRight className="w-4 h-4 text-neutral-600" />
             ) : (
-              <ChevronLeft className="w-5 h-5 text-neutral-600" />
+              <ChevronLeft className="w-4 h-4 text-neutral-600" />
             )}
           </button>
-        </div>
 
-        {/* Navigation */}
-        <nav className="flex-1 p-2 space-y-2">
-          {navigation.map((item) => {
-            const Icon = item.icon;
-            const isActive = location.pathname === item.href;
-            
-            return (
-              <Link
-                key={item.name}
-                to={item.href}
-                className={`group flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-all duration-200 ${
-                  isActive
-                    ? 'bg-primary-100 text-primary-700 font-semibold'
-                    : 'text-neutral-600 hover:text-primary-600 hover:bg-primary-50'
-                }`}
-              >
-                <div className="relative">
-                  <Icon className=" w-5 h-5 flex-shrink-0" />
+          {/* Top Section: Logo */}
+          <div className="flex items-center px-4 py-6 border-b border-neutral-200">
+            <Link to="/" className="flex items-center mr-8">
+              {isCollapsed ? (
+                <div className="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center">
+                  <Car className="w-5 h-5 text-primary-600" />
                 </div>
-                
+              ) : (
                 <AnimatePresence>
-                  {!isCollapsed && (
-                    <motion.div
-                      variants={itemVariants}
-                      initial="closed"
-                      animate="open"
-                      exit="closed"
-                      className="flex-1 flex items-center justify-between"
-                    >
-                      <span className="text-sm font-medium">{item.name}</span>
-                      {item.badge && (
-                        <span className="w-2 h-2 bg-primary-500 rounded-full"></span>
-                      )}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </Link>
-            );
-          })}
-        </nav>
-
-        {/* Bottom Navigation */}
-        <div className="p-4 border-t border-neutral-200 space-y-2">
-          {bottomNavigation.map((item) => {
-            const Icon = item.icon;
-            const isActive = item.href && location.pathname === item.href;
-
-            if (item.action) {
-              // Render button for actions like Logout
-              return (
-                <button
-                  key={item.name}
-                  onClick={item.action}
-                  className="cursor-pointer  group flex items-center space-x-3 px-3 py-2.5 rounded-lg text-neutral-600 hover:text-primary-600 hover:bg-primary-50 transition-all duration-200 w-full"
-                >
-                  <Icon className="w-5 h-5 flex-shrink-0" />
-                  {!isCollapsed && (
-                    <motion.span
-                      variants={itemVariants}
-                      initial="closed"
-                      animate="open"
-                      exit="closed"
-                      className="text-sm font-medium"
-                    >
-                      {item.name}
-                    </motion.span>
-                  )}
-                </button>
-              );
-            }
-
-            // Render normal navigation link
-            return (
-              <Link
-                key={item.name}
-                to={item.href}
-                className={`group flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-all duration-200 ${
-                  isActive
-                    ? "bg-primary-100 text-primary-700 font-semibold"
-                    : "text-neutral-600 hover:text-primary-600 hover:bg-primary-50"
-                }`}
-              >
-                <Icon className="w-5 h-5 flex-shrink-0" />
-                {!isCollapsed && (
-                  <motion.span
+                  <motion.div
                     variants={itemVariants}
                     initial="closed"
                     animate="open"
                     exit="closed"
-                    className="text-sm font-medium"
                   >
-                    {item.name}
-                  </motion.span>
-                )}
-              </Link>
-            );
-          })}
+                    <img 
+                      className="h-8 w-auto max-w-[120px]" 
+                      src="src/assets/original_logo.jpg" 
+                      alt="Amacar Logo" 
+                    />
+                  </motion.div>
+                </AnimatePresence>
+              )}
+            </Link>
+          </div>
+
+          {/* Navigation */}
+          <nav className="flex-1 p-2 space-y-1 mt-2">
+            {navigation.map((item) => {
+              const Icon = item.icon;
+              const isActive = location.pathname === item.href;
+              
+              return (
+                <div key={item.name}>
+                  {item.action ? (
+                    <button
+                      onClick={item.action}
+                      className={`cursor-pointer group text-start flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-200 w-full ${
+                        isActive
+                          ? 'bg-primary-100 text-primary-700 font-semibold'
+                          : 'text-neutral-600 hover:text-primary-600 hover:bg-primary-50'
+                      }`}
+                    >
+                      <Icon className="w-5 h-5 flex-shrink-0" />
+                      <AnimatePresence>
+                        {!isCollapsed && (
+                          <motion.div
+                            variants={itemVariants}
+                            initial="closed"
+                            animate="open"
+                            exit="closed"
+                            className="flex-1"
+                          >
+                            <span className="text-sm font-medium">{item.name}</span>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </button>
+                  ) : (
+                    <Link
+                      to={item.href}
+                      className={`group flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-200 ${
+                        isActive
+                          ? 'bg-primary-100 text-primary-700 font-semibold'
+                          : 'text-neutral-600 hover:text-primary-600 hover:bg-primary-50'
+                      }`}
+                    >
+                      <Icon className="w-5 h-5 flex-shrink-0" />
+                      <AnimatePresence>
+                        {!isCollapsed && (
+                          <motion.div
+                            variants={itemVariants}
+                            initial="closed"
+                            animate="open"
+                            exit="closed"
+                            className="flex-1"
+                          >
+                            <span className="text-sm font-medium">{item.name}</span>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </Link>
+                  )}
+                </div>
+              );
+            })}
+          </nav>
+
+          {/* Bottom Navigation */}
+          <div className="p-4 border-t border-neutral-200 space-y-1">
+            {bottomNavigation.map((item) => {
+              const Icon = item.icon;
+              const isActive = item.href && location.pathname === item.href;
+
+              if (item.action) {
+                return (
+                  <button
+                    key={item.name}
+                    onClick={item.action}
+                    className="cursor-pointer group flex items-center space-x-2 px-3 py-2 rounded-lg text-neutral-600 hover:text-primary-600 hover:bg-primary-50 transition-all duration-200 w-full"
+                  >
+                    <Icon className="w-5 h-5 flex-shrink-0" />
+                    <AnimatePresence>
+                      {!isCollapsed && (
+                        <motion.span
+                          variants={itemVariants}
+                          initial="closed"
+                          animate="open"
+                          exit="closed"
+                          className="text-sm font-medium"
+                        >
+                          {item.name}
+                        </motion.span>
+                      )}
+                    </AnimatePresence>
+                  </button>
+                );
+              }
+
+              return (
+                <Link
+                  key={item.name}
+                  to={item.href}
+                  className={`group flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-200 ${
+                    isActive
+                      ? "bg-primary-100 text-primary-700 font-semibold"
+                      : "text-neutral-600 hover:text-primary-600 hover:bg-primary-50"
+                  }`}
+                >
+                  <Icon className="w-5 h-5 flex-shrink-0" />
+                  <AnimatePresence>
+                    {!isCollapsed && (
+                      <motion.span
+                        variants={itemVariants}
+                        initial="closed"
+                        animate="open"
+                        exit="closed"
+                        className="text-sm font-medium"
+                      >
+                        {item.name}
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+                </Link>
+              );
+            })}
+          </div>
+
+          {/* User Info */}
+          <AnimatePresence>
+            {!isCollapsed && (
+              <motion.div
+                variants={itemVariants}
+                initial="closed"
+                animate="open"
+                exit="closed"
+                className="p-4 border-t border-neutral-200"
+              >
+                <div className="flex items-center space-x-3">
+                  <div className="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center">
+                    <User className="w-4 h-4 text-primary-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-neutral-800 truncate">John Doe</p>
+                    <p className="text-xs text-neutral-500 truncate">john@example.com</p>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
+      </motion.aside>
 
-
-        {/* User Info */}
-        <AnimatePresence>
-          {!isCollapsed && (
-            <motion.div
-              variants={itemVariants}
-              initial="closed"
-              animate="open"
-              exit="closed"
-              className="p-4 border-t border-neutral-200"
-            >
-              <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center">
-                  <User className="w-4 h-4 text-primary-600" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-neutral-800 truncate">John Doe</p>
-                  <p className="text-xs text-neutral-500 truncate">john@example.com</p>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-    </motion.aside>
+      {/* Add Vehicle Modal */}
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title="Add Your Vehicle"
+        description="Enter your vehicle details to start the auction process"
+      />
+    </>
   );
 };
 

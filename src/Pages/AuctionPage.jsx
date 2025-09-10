@@ -11,10 +11,11 @@ import {
     XCircle,
     ChevronLeft,
 } from "lucide-react"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 
 
 export default function AuctionPage() {
+    const navigate = useNavigate();
     const [values, setValues] = useState({
         mileage: "",
         exteriorColor: "",
@@ -73,7 +74,7 @@ export default function AuctionPage() {
         e.preventDefault()
         setSubmitted(true)
         if (allValid) {
-            setTimeout(() => setShowSuccess(true), 300)
+            setTimeout(() => navigate('/condition-assessment'), 300)
         }
     }
 
@@ -359,7 +360,7 @@ export default function AuctionPage() {
             </div>
 
             {/* Success state */}
-            <AnimatePresence>
+            {/* <AnimatePresence>
                 {showSuccess && (
                     <motion.div
                         initial={{ opacity: 0 }}
@@ -392,7 +393,7 @@ export default function AuctionPage() {
                         </motion.div>
                     </motion.div>
                 )}
-            </AnimatePresence>
+            </AnimatePresence> */}
         </div>
         </>
     )

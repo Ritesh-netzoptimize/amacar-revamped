@@ -85,7 +85,7 @@ const Sidebar = ({ isCollapsed, onToggle }) => {
       animate={isCollapsed ? 'closed' : 'open'}
       className="fixed left-0 top-16 bottom-0 bg-white border-r border-neutral-200 z-40 transition-all duration-300"
     >
-      <div className="flex flex-col h-full">
+      <div className="bg-blue-50 flex flex-col h-full">
         {/* Toggle Button */}
         <div className="p-4 border-b border-neutral-200">
           <button

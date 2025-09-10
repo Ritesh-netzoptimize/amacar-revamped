@@ -16,9 +16,9 @@ const DashboardLayout = ({ children }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-hero">
+    <div className="bg-blue-50 min-h-screen bg-gradient-hero ">
       {/* Mobile Header */}
-      <div className='lg:block py-[1rem] px-[4rem] fixed '><img className=' h-10 w-32' src="src\assets\original_logo.jpg" alt="logo" /></div>
+      <a href='/' className='lg:block py-[1rem] px-[4rem] fixed '><img className='cursor-pointer h-10 w-32' src="src\assets\original_logo.jpg" alt="logo" /></a>
       <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-white border-b border-neutral-200">
         <div className="flex items-center justify-between p-4">
           <button

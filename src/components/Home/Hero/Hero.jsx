@@ -8,9 +8,11 @@ import Modal from "@/components/ui/modal.jsx"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
+import AuctionModal from "@/components/ui/AuctionYourRideModal"
 
 export default function Hero() {
   const [open, setOpen] = useState(false)
+  const [auctionOpen, setAuctionOpen] = useState(false);
 
   // 🔹 Variants for animation
   const fadeUp = {
@@ -49,14 +51,23 @@ export default function Hero() {
             }}>
             Get Your Instant Offer
           </a>
-          <a
-            href="#"
-            className="btn-purple"
+          <button
+            onClick={(e) => {
+              e.preventDefault()
+              setAuctionOpen(true)
+            }}
+            className="cursor-pointer btn-purple"
           >
             Auction Your Ride
-          </a>
+          </button  >
         </motion.div>
       </motion.div>
+
+      {/* Auction modal */}
+      <AuctionModal
+        isOpen={auctionOpen}
+        onClose={setAuctionOpen}
+      />
 
       {/* 🔹 Reusable Modal */}
       <Modal

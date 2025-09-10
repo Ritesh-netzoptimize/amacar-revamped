@@ -31,17 +31,15 @@ export default function LoginModal({
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [showNewPassword, setShowNewPassword] = useState(false)
 
-
   const [errors, setErrors] = useState({ email: "", username: "", password: "", confirmPassword: "", otp: "", newPassword: "" })
-  const [phase, setPhase] = useState("form") // form | otp | loading | success | failed | forgot | verify-otp | reset-password
+  const [phase, setPhase] = useState("form") // form | loading | success | failed | forgot | verify-otp | reset-password
   const [isLoading, setIsLoading] = useState(false)
   const [isRegisterMode, setIsRegisterMode] = useState(false)
-  const [showOtpModal, setShowOtpModal] = useState(false)
   const [isForgotPasswordMode, setIsForgotPasswordMode] = useState(false)
 
   const navigate = useNavigate();
 
-  const isCloseDisabled = phase === "loading" || phase === "otp" || phase === "verify-otp"
+  const isCloseDisabled = phase === "loading" || phase === "verify-otp"
 
   function validate() {
     const newErrors = { email: "", username: "", password: "", confirmPassword: "", otp: "", newPassword: "" }
@@ -120,7 +118,7 @@ export default function LoginModal({
     setTimeout(() => {
       setPhase("failed")
       setIsLoading(false)
-      toast.error("Registration failed: OTP verification required", { duration: 2000 })
+      toast.error("Registration failed: Please try again", { duration: 2000 })
     }, 2000)
   }
 
@@ -128,14 +126,11 @@ export default function LoginModal({
     e?.preventDefault()
     if (isRegisterMode) {
       if (validate()) {
-        setShowOtpModal(true)
-        setPhase("otp")
-        toast.success("OTP sent to your email", { duration: 2000 })
+        startAction()
       }
     } else if (isForgotPasswordMode && phase === "forgot") {
       if (validate()) {
         setPhase("verify-otp")
-        setShowOtpModal(true)
         toast.success("OTP sent to your email", { duration: 2000 })
       }
     } else if (phase === "reset-password") {
@@ -152,10 +147,7 @@ export default function LoginModal({
   function handleOtpSubmit(e) {
     e?.preventDefault()
     if (validateOtp()) {
-      setShowOtpModal(false)
-      if (isRegisterMode) {
-        startAction()
-      } else if (isForgotPasswordMode) {
+      if (isForgotPasswordMode) {
         setPhase("reset-password")
       }
     }
@@ -163,10 +155,7 @@ export default function LoginModal({
 
   function handleOtpModalClose(open) {
     if (!open && !isLoading) {
-      setShowOtpModal(false)
-      if (isRegisterMode) {
-        handleFailedRegistration()
-      } else if (isForgotPasswordMode) {
+      if (isForgotPasswordMode) {
         setIsForgotPasswordMode(false)
         setPhase("form")
         setErrors({ email: "", username: "", password: "", confirmPassword: "", otp: "", newPassword: "" })
@@ -239,7 +228,6 @@ export default function LoginModal({
     setConfirmPassword("")
     setOtp("")
     setNewPassword("")
-    setShowOtpModal(false)
     setPhase("form")
   }
 
@@ -485,7 +473,7 @@ export default function LoginModal({
                       {isLoading ? (
                         <div className="flex items-center justify-center gap-2">
                           <Loader2 className="h-4 w-4 animate-spin" />
-                          {isRegisterMode ? "Preparing OTP..." : 
+                          {isRegisterMode ? "Registering..." : 
                            phase === "forgot" ? "Sending OTP..." : 
                            phase === "reset-password" ? "Updating Password..." : 
                            "Signing In..."}
@@ -630,7 +618,7 @@ export default function LoginModal({
                       Registration Failed
                     </h3>
                     <p className="text-sm text-slate-600">
-                      OTP verification is required to complete registration.
+                      Please try again.
                     </p>
                   </div>
                   <button
@@ -646,63 +634,65 @@ export default function LoginModal({
         </DialogContent>
       </Dialog>
 
-      {/* OTP Verification Modal */}
-      <Dialog open={showOtpModal && (phase === "otp" || phase === "verify-otp")} onOpenChange={handleOtpModalClose}>
-        <DialogContent className="sm:max-w-md rounded-2xl shadow-xl p-6 bg-white">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-semibold tracking-tight text-slate-900">
-              Verify OTP
-            </DialogTitle>
-            <DialogDescription className="text-sm text-slate-600">
-              We’ve sent a 6-digit OTP to {email}. Please enter it below.
-            </DialogDescription>
-          </DialogHeader>
-          <motion.form
-            onSubmit={handleOtpSubmit}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.25, ease: "easeOut" }}
-            className="grid gap-5"
-          >
-            <div className="grid gap-2">
-              <label htmlFor="otp" className="text-sm font-medium text-slate-800">
-                OTP
-              </label>
-              <input
-                id="otp"
-                type="text"
-                value={otp}
-                onChange={(e) => setOtp(e.target.value)}
-                placeholder="123456"
-                className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none ring-0 transition-shadow focus:shadow-[0_0_0_4px_rgba(15,23,42,0.08)]"
-              />
-              {errors.otp && (
-                <motion.p 
-                  initial={{ opacity: 0, y: -4 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="text-xs text-red-600"
-                >
-                  {errors.otp}
-                </motion.p>
-              )}
-            </div>
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="cursor-pointer w-full h-11 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 text-white text-sm font-semibold shadow-lg shadow-orange-500/20 transition hover:from-orange-600 hover:to-amber-600 disabled:opacity-50 disabled:cursor-not-allowed"
+      {/* OTP Verification Modal (Only for Forgot Password) */}
+      {isForgotPasswordMode && phase === "verify-otp" && (
+        <Dialog open={phase === "verify-otp"} onOpenChange={handleOtpModalClose}>
+          <DialogContent className="sm:max-w-md rounded-2xl shadow-xl p-6 bg-white">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-semibold tracking-tight text-slate-900">
+                Verify OTP
+              </DialogTitle>
+              <DialogDescription className="text-sm text-slate-600">
+                We’ve sent a 6-digit OTP to {email}. Please enter it below.
+              </DialogDescription>
+            </DialogHeader>
+            <motion.form
+              onSubmit={handleOtpSubmit}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.25, ease: "easeOut" }}
+              className="grid gap-5"
             >
-              {isLoading ? (
-                <div className="flex items-center justify-center gap-2">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Verifying OTP...
-                </div>
-              ) : (
-                "Verify OTP"
-              )}
-            </button>
-          </motion.form>
-        </DialogContent>
-      </Dialog>
+              <div className="grid gap-2">
+                <label htmlFor="otp" className="text-sm font-medium text-slate-800">
+                  OTP
+                </label>
+                <input
+                  id="otp"
+                  type="text"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value)}
+                  placeholder="123456"
+                  className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none ring-0 transition-shadow focus:shadow-[0_0_0_4px_rgba(15,23,42,0.08)]"
+                />
+                {errors.otp && (
+                  <motion.p 
+                    initial={{ opacity: 0, y: -4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="text-xs text-red-600"
+                  >
+                    {errors.otp}
+                  </motion.p>
+                )}
+              </div>
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="cursor-pointer w-full h-11 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 text-white text-sm font-semibold shadow-lg shadow-orange-500/20 transition hover:from-orange-600 hover:to-amber-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isLoading ? (
+                  <div className="flex items-center justify-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Verifying OTP...
+                  </div>
+                ) : (
+                  "Verify OTP"
+                )}
+              </button>
+            </motion.form>
+          </DialogContent>
+        </Dialog>
+      )}
     </>
   )
 }

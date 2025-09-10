@@ -11,7 +11,11 @@ import {
   ChevronRight,
   Home,
   Bell,
-  Settings
+  Settings,
+  Hamburger,
+  HamburgerIcon,
+  LucideHamburger,
+  Menu
 } from 'lucide-react';
 
 const Sidebar = ({ isCollapsed, onToggle }) => {
@@ -83,17 +87,17 @@ const Sidebar = ({ isCollapsed, onToggle }) => {
     <motion.aside
       variants={containerVariants}
       animate={isCollapsed ? 'closed' : 'open'}
-      className="fixed left-0 top-16 bottom-0 bg-white border-r border-neutral-200 z-40 transition-all duration-300"
+      className="fixed left-0 top-[1px] bottom-0 bg-white border-r border-neutral-200 z-40 transition-all duration-300"
     >
       <div className="flex flex-col h-full">
         {/* Toggle Button */}
         <div className="p-4 border-b border-neutral-200">
           <button
             onClick={onToggle}
-            className="w-full flex items-center justify-center p-2 hover:bg-neutral-100 rounded-lg transition-colors"
+            className="cursor-pointer w-full flex items-center justify-center p-2 hover:bg-neutral-100 rounded-lg transition-colors"
           >
             {isCollapsed ? (
-              <ChevronRight className="w-5 h-5 text-neutral-600" />
+              <Menu className="w-5 h-5 text-neutral-600" />
             ) : (
               <ChevronLeft className="w-5 h-5 text-neutral-600" />
             )}

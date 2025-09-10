@@ -98,7 +98,17 @@ export default function ConditionAssessment() {
     []
   );
 
-  const [answers, setAnswers] = useState({});
+  const [answers, setAnswers] = useState(() => {
+    const initial = {};
+    questions.forEach((q) => {
+      if (q.positive.length > 0) {
+        initial[q.key] = q.positive[0]; // Prefill with first positive answer
+      }
+    });
+    return initial;
+  });
+
+  const [confirmedAnswers, setConfirmedAnswers] = useState({});
   const [details, setDetails] = useState({});
   const [currentPage, setCurrentPage] = useState(0);
   const [showValidation, setShowValidation] = useState(false);
@@ -125,7 +135,7 @@ export default function ConditionAssessment() {
   const questionsPerPage = 2;
   const totalPages = Math.ceil(questions.length / questionsPerPage);
   const total = questions.length;
-  const answered = Object.keys(answers).length;
+  const answered = Object.keys(confirmedAnswers).length;
   const percent = Math.round((answered / total) * 100);
 
   const currentQuestions = questions.slice(
@@ -139,16 +149,20 @@ export default function ConditionAssessment() {
       const timer = setTimeout(() => {
         setShowValidation(false);
       }, 3000);
-      return () => clearTimeout(timer); // Cleanup on unmount or state change
+      return () => clearTimeout(timer);
     }
   }, [showValidation]);
 
   function selectAnswer(key, value) {
     setAnswers((prev) => ({ ...prev, [key]: value }));
-    setShowValidation(false); // Clear validation when user answers
+    const question = questions.find((q) => q.key === key);
+    // Confirm the answer if it's non-positive or if explicitly selected
+    if (!question.positive.includes(value) || confirmedAnswers[key]) {
+      setConfirmedAnswers((prev) => ({ ...prev, [key]: value }));
+    }
+    setShowValidation(false);
 
     // Clear details if the answer doesn't need details
-    const question = questions.find((q) => q.key === key);
     if (!question.needsDetails.includes(value)) {
       setDetails((prev) => {
         const newDetails = { ...prev };
@@ -163,23 +177,40 @@ export default function ConditionAssessment() {
   }
 
   function nextPage() {
-    // Check if all questions on the current page are answered
     const unanswered = currentQuestions.some((q) => !answers[q.key]);
     if (unanswered) {
       setShowValidation(true);
       return;
     }
-    if (currentPage < totalPages -1) {
+    currentQuestions.forEach((q) => {
+      setConfirmedAnswers((prev) => ({ ...prev, [q.key]: answers[q.key] }));
+    });
+    if (currentPage < totalPages - 1) {
       setCurrentPage(currentPage + 1);
-      setShowValidation(false); // Clear validation on successful navigation
+      setShowValidation(false);
     }
   }
 
   function prevPage() {
     if (currentPage > 0) {
       setCurrentPage(currentPage - 1);
-      setShowValidation(false); // Clear validation when going back
+      setShowValidation(false);
     }
+  }
+
+  function handleContinue() {
+    // Validate and confirm answers on the last page
+    const unanswered = currentQuestions.some((q) => !answers[q.key]);
+    if (unanswered) {
+      setShowValidation(true);
+      return;
+    }
+    // Confirm all answers on the last page
+    currentQuestions.forEach((q) => {
+      setConfirmedAnswers((prev) => ({ ...prev, [q.key]: answers[q.key] }));
+    });
+    setShowValidation(false);
+    setShowUserForm(true);
   }
 
   function renderQuestion(question, questionIndex) {
@@ -204,7 +235,6 @@ export default function ConditionAssessment() {
           </p>
         </div>
 
-        {/* Options */}
         <div className="grid grid-cols-2 gap-3 md:grid-cols-3 mb-4">
           {question.options.map((opt) => {
             const isPositive = question.positive.includes(opt);
@@ -245,7 +275,6 @@ export default function ConditionAssessment() {
           })}
         </div>
 
-        {/* Details input for negative impact answers */}
         {needsDetails && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
@@ -277,7 +306,6 @@ export default function ConditionAssessment() {
             Condition Assessment
           </h1>
 
-          {/* Validation Message */}
           {showValidation && (
             <motion.div
               initial={{ opacity: 0, y: -20 }}
@@ -290,12 +318,10 @@ export default function ConditionAssessment() {
             </motion.div>
           )}
 
-          {/* Progress tracker */}
           <div className="mb-6 rounded-2xl border border-white/60 bg-white/70 p-4 shadow-xl backdrop-blur-xl">
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
               <div className="text-sm text-slate-700">
-                <span className="font-semibold">{answered} of {total}</span> questions answered —{" "}
-                <span className="font-semibold">{percent}%</span>
+                <span className="font-semibold">{answered} of {total}</span> questions confirmed
               </div>
               <div className="h-2 w-full overflow-hidden rounded-full bg-slate-200 md:max-w-sm">
                 <motion.div
@@ -308,16 +334,12 @@ export default function ConditionAssessment() {
             </div>
           </div>
 
-          {/* Content grid */}
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-            {/* Left: Conditional content */}
             <div className="lg:col-span-8">
-              {/* Questions View */}
               {!showUserForm && (
                 <motion.div initial="hidden" animate="visible" exit="exit" variants={formVariants}>
                   <div className="space-y-6">{currentQuestions.map((question, index) => renderQuestion(question, index))}</div>
 
-                  {/* Navigation buttons */}
                   <div className="mt-6 flex items-center justify-between gap-3">
                     <button
                       onClick={prevPage}
@@ -344,7 +366,7 @@ export default function ConditionAssessment() {
                       </button>
                     ) : (
                       <button
-                        onClick={() => setShowUserForm(true)}
+                        onClick={handleContinue}
                         className="cursor-pointer inline-flex h-11 items-center justify-center rounded-xl bg-gradient-to-r from-[#f6851f] to-[#e63946] px-6 text-sm font-semibold text-white shadow-lg shadow-orange-500/25 transition hover:scale-[1.01]"
                       >
                         Continue
@@ -354,7 +376,6 @@ export default function ConditionAssessment() {
                 </motion.div>
               )}
 
-              {/* User Details View */}
               {showUserForm && (
                 <motion.div initial="hidden" animate="visible" exit="exit" variants={formVariants} className="rounded-2xl border border-white/60 bg-white/70 p-6 shadow-xl backdrop-blur-xl">
                   <div className="mb-6">
@@ -363,7 +384,6 @@ export default function ConditionAssessment() {
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* Full Name */}
                     <div className="grid gap-2">
                       <label className="text-sm font-medium text-slate-800">Full Name</label>
                       <div className="relative">
@@ -377,7 +397,6 @@ export default function ConditionAssessment() {
                       </div>
                     </div>
 
-                    {/* Email */}
                     <div className="grid gap-2">
                       <label className="text-sm font-medium text-slate-800">Email Address</label>
                       <div className="relative">
@@ -391,7 +410,6 @@ export default function ConditionAssessment() {
                       </div>
                     </div>
 
-                    {/* Phone */}
                     <div className="grid gap-2">
                       <label className="text-sm font-medium text-slate-800">Phone Number</label>
                       <div className="relative">
@@ -405,9 +423,6 @@ export default function ConditionAssessment() {
                       </div>
                     </div>
 
-                    
-
-                    {/* Zipcode */}
                     <div className="grid gap-2">
                       <label className="text-sm font-medium text-slate-800">Zipcode</label>
                       <div className="relative">
@@ -421,7 +436,6 @@ export default function ConditionAssessment() {
                       </div>
                     </div>
 
-                    {/* State */}
                     <div className="grid gap-2">
                       <label className="text-sm font-medium text-slate-800">State</label>
                       <div className="relative">
@@ -435,7 +449,6 @@ export default function ConditionAssessment() {
                       </div>
                     </div>
 
-                    {/* City */}
                     <div className="grid gap-2">
                       <label className="text-sm font-medium text-slate-800">City</label>
                       <div className="relative">
@@ -448,11 +461,8 @@ export default function ConditionAssessment() {
                         />
                       </div>
                     </div>
-
-                   
                   </div>
 
-                  {/* Submit Assessment at bottom */}
                   <div className="mt-6 flex items-center justify-between gap-3">
                     <button
                       onClick={() => setShowUserForm(false)}
@@ -463,7 +473,6 @@ export default function ConditionAssessment() {
 
                     <button
                       onClick={() => {
-                        // basic validation
                         const errs = {};
                         if (!user.fullName) errs.fullName = true;
                         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(user.email)) errs.email = true;
@@ -485,7 +494,6 @@ export default function ConditionAssessment() {
               )}
             </div>
 
-            {/* Right: summary */}
             <div className="lg:col-span-4">
               <div className="sticky top-6 space-y-6">
                 <div className="rounded-2xl border border-white/60 bg-white/70 p-6 shadow-xl backdrop-blur-xl">
@@ -497,36 +505,36 @@ export default function ConditionAssessment() {
                   </div>
                   <div className="max-h-96 overflow-y-auto space-y-2">
                     {questions.map((q) => (
-                        <div
+                      <div
                         key={q.key}
                         className="rounded-xl border border-slate-200 bg-white px-3 py-2 flex flex-col"
-                        >
+                      >
                         <div className="flex items-center justify-between text-sm gap-2">
-                            <div className="flex items-center gap-2 min-w-0">
+                          <div className="flex items-center gap-2 min-w-0">
                             <span>{q.emoji}</span>
                             <span className="truncate min-w-0">{q.label}</span>
-                            </div>
-                            <span
+                          </div>
+                          <span
                             className={`text-xs font-medium whitespace-nowrap ${
-                                q.positive.includes(answers[q.key])
+                              confirmedAnswers[q.key] && q.positive.includes(confirmedAnswers[q.key])
                                 ? "text-green-700"
-                                : answers[q.key]
+                                : confirmedAnswers[q.key]
                                 ? "text-rose-700"
                                 : "text-slate-500"
                             }`}
-                            >
-                            {answers[q.key] || "—"}
-                            </span>
+                          >
+                            {confirmedAnswers[q.key] || answers[q.key] || "—"}
+                          </span>
                         </div>
 
                         {details[q.key] && (
-                            <div className="mt-2 text-xs text-slate-600 bg-slate-50 px-2 py-1 rounded break-words">
+                          <div className="mt-2 text-xs text-slate-600 bg-slate-50 px-2 py-1 rounded break-words">
                             {details[q.key].substring(0, 60)}...
-                            </div>
+                          </div>
                         )}
-                        </div>
+                      </div>
                     ))}
-                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -534,7 +542,6 @@ export default function ConditionAssessment() {
         </div>
       </div>
 
-      {/* Auction Selection Modal */}
       <AuctionSelectionModal 
         isOpen={showAuctionModal} 
         onClose={setShowAuctionModal} 

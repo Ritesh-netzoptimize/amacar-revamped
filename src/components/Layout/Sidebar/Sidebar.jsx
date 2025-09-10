@@ -15,7 +15,15 @@ import {
   Hamburger,
   HamburgerIcon,
   LucideHamburger,
-  Menu
+  Menu,
+  LayoutDashboard,
+  TrendingUp,
+  Hourglass,
+  FileText,
+  LogOut,
+  Plus,
+  icons,
+  HomeIcon
 } from 'lucide-react';
 
 const Sidebar = ({ isCollapsed, onToggle }) => {
@@ -23,27 +31,32 @@ const Sidebar = ({ isCollapsed, onToggle }) => {
 
   const navigation = [
     {
+      name: 'Amacar',
+      href: '/',
+      icon: HomeIcon,
+    },
+    {
       name: 'Dashboard',
       href: '/dashboard',
-      icon: Home,
+      icon: LayoutDashboard,
       badge: null,
     },
     {
       name: 'Live Auctions',
       href: '/auctions',
-      icon: Car,
+      icon: TrendingUp,
       badge: 2,
     },
     {
       name: 'Pending Offers',
       href: '/pending-offers',
-      icon: Clock,
+      icon: Hourglass,
       badge: 3,
     },
     {
       name: 'Previous Offers',
       href: '/offers',
-      icon: Car,
+      icon: FileText,
       badge: null,
     },
     {
@@ -58,18 +71,28 @@ const Sidebar = ({ isCollapsed, onToggle }) => {
       icon: Calendar,
       badge: 2,
     },
+    {
+      name: 'Add Vehicle',
+      href: '/add-vehicle',
+      icon: Plus,
+
+    }
   ];
 
   const bottomNavigation = [
     {
-      name: 'Profile',
-      href: '/profile',
+      name: "Profile",
+      href: "/profile",
       icon: User,
     },
     {
-      name: 'Settings',
-      href: '/settings',
-      icon: Settings,
+      name: "Logout",
+      icon: LogOut,
+      action: () => {
+        // Put your logout logic here
+        console.log("Logging out...");
+        // Example: clear auth token, redirect, etc.
+      },
     },
   ];
 
@@ -89,7 +112,35 @@ const Sidebar = ({ isCollapsed, onToggle }) => {
       animate={isCollapsed ? 'closed' : 'open'}
       className="fixed left-0 top-[1px] bottom-0 bg-white border-r border-neutral-200 z-40 transition-all duration-300"
     >
+      
       <div className="flex flex-col h-full">
+      <Link
+  key="home"
+  to="/"
+  className={`group flex items-center px-3 py-2.5 rounded-lg transition-all duration-200 ${
+    isCollapsed ? "justify-start" : "justify-center"
+  }`}
+>
+  <div className="relative">
+    {isCollapsed && <Link to={'/'}><HomeIcon className="w-5 h-5 m-2 flex-shrink-0" /></Link>}
+  </div>
+
+  {!isCollapsed && (
+    <AnimatePresence>
+      <motion.div
+        variants={itemVariants}
+        initial="closed"
+        animate="open"
+        exit="closed"
+        className="flex-1 flex items-center justify-center"
+      >
+        {/* Add your label/text here */}
+        <a href="/"><img className='h-10 w-32' src="src\assets\original_logo.jpg" alt="" /></a>
+      </motion.div>
+    </AnimatePresence>
+  )}
+</Link>
+
         {/* Toggle Button */}
         <div className="p-4 border-b border-neutral-200">
           <button
@@ -105,7 +156,7 @@ const Sidebar = ({ isCollapsed, onToggle }) => {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 p-4 space-y-2">
+        <nav className="flex-1 p-2 space-y-2">
           {navigation.map((item) => {
             const Icon = item.icon;
             const isActive = location.pathname === item.href;
@@ -121,12 +172,7 @@ const Sidebar = ({ isCollapsed, onToggle }) => {
                 }`}
               >
                 <div className="relative">
-                  <Icon className="w-5 h-5 flex-shrink-0" />
-                  {item.badge && (
-                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-error text-white text-xs rounded-full flex items-center justify-center">
-                      {item.badge}
-                    </span>
-                  )}
+                  <Icon className=" w-5 h-5 flex-shrink-0" />
                 </div>
                 
                 <AnimatePresence>
@@ -154,21 +200,17 @@ const Sidebar = ({ isCollapsed, onToggle }) => {
         <div className="p-4 border-t border-neutral-200 space-y-2">
           {bottomNavigation.map((item) => {
             const Icon = item.icon;
-            const isActive = location.pathname === item.href;
-            
-            return (
-              <Link
-                key={item.name}
-                to={item.href}
-                className={`group flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-all duration-200 ${
-                  isActive
-                    ? 'bg-primary-100 text-primary-700 font-semibold'
-                    : 'text-neutral-600 hover:text-primary-600 hover:bg-primary-50'
-                }`}
-              >
-                <Icon className="w-5 h-5 flex-shrink-0" />
-                
-                <AnimatePresence>
+            const isActive = item.href && location.pathname === item.href;
+
+            if (item.action) {
+              // Render button for actions like Logout
+              return (
+                <button
+                  key={item.name}
+                  onClick={item.action}
+                  className="cursor-pointer  group flex items-center space-x-3 px-3 py-2.5 rounded-lg text-neutral-600 hover:text-primary-600 hover:bg-primary-50 transition-all duration-200 w-full"
+                >
+                  <Icon className="w-5 h-5 flex-shrink-0" />
                   {!isCollapsed && (
                     <motion.span
                       variants={itemVariants}
@@ -180,11 +222,38 @@ const Sidebar = ({ isCollapsed, onToggle }) => {
                       {item.name}
                     </motion.span>
                   )}
-                </AnimatePresence>
+                </button>
+              );
+            }
+
+            // Render normal navigation link
+            return (
+              <Link
+                key={item.name}
+                to={item.href}
+                className={`group flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-all duration-200 ${
+                  isActive
+                    ? "bg-primary-100 text-primary-700 font-semibold"
+                    : "text-neutral-600 hover:text-primary-600 hover:bg-primary-50"
+                }`}
+              >
+                <Icon className="w-5 h-5 flex-shrink-0" />
+                {!isCollapsed && (
+                  <motion.span
+                    variants={itemVariants}
+                    initial="closed"
+                    animate="open"
+                    exit="closed"
+                    className="text-sm font-medium"
+                  >
+                    {item.name}
+                  </motion.span>
+                )}
               </Link>
             );
           })}
         </div>
+
 
         {/* User Info */}
         <AnimatePresence>

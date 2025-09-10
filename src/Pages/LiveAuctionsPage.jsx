@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Car, Clock, Users, DollarSign, Eye, MoreVertical, Play, Pause } from 'lucide-react';
 import { formatCurrency, formatTimeRemaining } from '../lib/utils';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+
 
 const LiveAuctionsPage = () => {
   const [auctions, setAuctions] = useState([
@@ -86,7 +88,7 @@ const LiveAuctionsPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-hero p-8 ">
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-8xl mx-auto">
         <motion.div
           variants={containerVariants}
           initial="hidden"
@@ -158,8 +160,8 @@ const LiveAuctionsPage = () => {
             <motion.div
               key={auction.id}
               variants={itemVariants}
-              className="card overflow-hidden hover:shadow-medium transition-all duration-300"
-              whileHover={{ scale: 1.02 }}
+              className="card overflow-hidden hover:shadow-medium "
+              // whileHover={{ scale: 1.02 }}
             >
               {/* Image */}
               <div className="relative h-48 bg-neutral-200">
@@ -171,11 +173,38 @@ const LiveAuctionsPage = () => {
                     LIVE
                   </span>
                 </div>
+
+
                 <div className="absolute top-4 right-4">
-                  <button className="p-2 bg-white/80 hover:bg-white rounded-full transition-colors">
-                    <MoreVertical className="w-4 h-4" />
-                  </button>
-                </div>
+      <DropdownMenu>
+        {/* Trigger: Three dots button */}
+        <DropdownMenuTrigger asChild>
+          <button className="cursor-pointer p-2 bg-white/80 hover:bg-white rounded-full transition-colors">
+            <MoreVertical className="w-4 h-4" />
+          </button>
+        </DropdownMenuTrigger>
+
+        {/* Dropdown content */}
+        <DropdownMenuContent
+          side="bottom"   // appear below the button
+          align="end"     // expand to the left
+          className="w-56 p-2 shadow-md bg-white rounded-md space-y-2"
+        >
+          <DropdownMenuItem className={"cursor-pointer [&[data-highlighted]]:bg-[var(--brand-orange)] [&[data-highlighted]]:text-white"}>
+            <button className="cursor-pointer hover:text-white">View details</button>
+          </DropdownMenuItem>
+
+          <DropdownMenuItem className={"cursor-pointer [&[data-highlighted]]:bg-[var(--brand-orange)] [&[data-highlighted]]:text-white"}>
+            <button className="cursor-pointer hover:text-white ">End auction</button>
+          </DropdownMenuItem>
+
+          <DropdownMenuItem className={"cursor-pointer [&[data-highlighted]]:bg-[var(--brand-orange)] [&[data-highlighted]]:text-white"}>
+           <button className="cursor-pointer hover:text-white ">Pause Auction</button>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
+                
               </div>
 
               {/* Content */}
@@ -211,7 +240,7 @@ const LiveAuctionsPage = () => {
                 </div>
 
                 {/* Actions */}
-                <div className="flex space-x-2">
+                <div className="flex space-x-4">
                   <button
                     onClick={() => handleEndAuction(auction.id)}
                     className="flex-1 btn-secondary flex items-center justify-center space-x-2"
@@ -221,7 +250,7 @@ const LiveAuctionsPage = () => {
                   </button>
                   <button className="btn-primary flex items-center justify-center space-x-2">
                     <Play className="w-4 h-4" />
-                    <span>View Details</span>
+                    <span>Pause auction</span>
                   </button>
                 </div>
               </div>

@@ -3,7 +3,7 @@ import Footer from './components/Layout/Footer/Footer.jsx'
 import './App.css'
 import { Toaster } from "react-hot-toast"
 import HomePage from './Pages/HomePage.jsx'
-import { Route, Router, Routes } from 'react-router-dom'
+import { Route, Router, Routes, useLocation } from 'react-router-dom'
 import AuctionPage from './Pages/AuctionPage.jsx'
 import DashboardLayout from './components/Layout/DashboardLayout/DashboardLayout.jsx'
 import Dashboard from './Pages/Dashboard.jsx'
@@ -18,6 +18,14 @@ import ExteriorPhotos from './Pages/ExteriorPhotos.jsx'
 import ReviewPage from './Pages/ReviewPage.jsx'
 
 function App() {
+  const location = useLocation()
+  const hideHeaderFooter = location.pathname.startsWith("/dashboard") 
+    || location.pathname.startsWith("/auctions")
+    || location.pathname.startsWith("/pending-offers")
+    || location.pathname.startsWith("/offers")
+    || location.pathname.startsWith("/accepted")
+    || location.pathname.startsWith("/appointments")
+    || location.pathname.startsWith("/profile")
   return (
       <div className="min-h-screen bg-slate-50">
        <Toaster
@@ -50,7 +58,7 @@ function App() {
           }}
         />
 
-        <Header />
+        {!hideHeaderFooter && <Header />}
 
         <main className="pt-0 bg-white">
         <Routes>
@@ -98,7 +106,7 @@ function App() {
           </Routes>
         </main>
 
-        <Footer />
+        {!hideHeaderFooter && <Footer />}
       </div>
   )
 }

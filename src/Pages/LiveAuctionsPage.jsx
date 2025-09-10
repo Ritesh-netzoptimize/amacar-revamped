@@ -85,7 +85,7 @@ const LiveAuctionsPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-hero p-8 md:mt-[2.5rem]">
+    <div className="min-h-screen bg-gradient-hero p-8 ">
       <div className="max-w-7xl mx-auto">
         <motion.div
           variants={containerVariants}

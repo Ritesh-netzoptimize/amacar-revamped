@@ -10,6 +10,11 @@ import {
 } from "@/components/ui/dialog"
 import toast from "react-hot-toast"
 import { useNavigate } from "react-router-dom"
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot,
+} from "@/components/ui/input-otp"
 
 export default function LoginModal({
   isOpen,
@@ -36,6 +41,7 @@ export default function LoginModal({
   const [isLoading, setIsLoading] = useState(false)
   const [isRegisterMode, setIsRegisterMode] = useState(false)
   const [isForgotPasswordMode, setIsForgotPasswordMode] = useState(false)
+
 
   const navigate = useNavigate();
 
@@ -653,28 +659,43 @@ export default function LoginModal({
               transition={{ duration: 0.25, ease: "easeOut" }}
               className="grid gap-5"
             >
-              <div className="grid gap-2">
-                <label htmlFor="otp" className="text-sm font-medium text-slate-800">
-                  OTP
-                </label>
-                <input
-                  id="otp"
-                  type="text"
-                  value={otp}
-                  onChange={(e) => setOtp(e.target.value)}
-                  placeholder="123456"
-                  className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none ring-0 transition-shadow focus:shadow-[0_0_0_4px_rgba(15,23,42,0.08)]"
-                />
-                {errors.otp && (
-                  <motion.p 
-                    initial={{ opacity: 0, y: -4 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="text-xs text-red-600"
-                  >
-                    {errors.otp}
-                  </motion.p>
-                )}
-              </div>
+             <div className="grid gap-2">
+  <label htmlFor="otp" className="text-sm font-medium text-slate-800">
+    OTP
+  </label>
+
+  {/* Shadcn InputOTP */}
+  <InputOTP
+    id="otp"
+    maxLength={6}
+    value={otp}
+    onChange={setOtp} // same setter you used before
+    className="flex gap-2"
+  >
+    <InputOTPGroup className="flex gap-2">
+      {Array(6)
+        .fill(null)
+        .map((_, i) => (
+          <InputOTPSlot
+            key={i}
+            index={i}
+            className=" h-11 w-11 rounded-lg border border-slate-200 bg-white text-center text-lg font-medium outline-none ring-0 transition-shadow "
+          />
+        ))}
+    </InputOTPGroup>
+  </InputOTP>
+
+  {/* Error message */}
+  {errors.otp && (
+    <motion.p
+      initial={{ opacity: 0, y: -4 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="text-xs text-red-600"
+    >
+      {errors.otp}
+    </motion.p>
+  )}
+</div>
               <button
                 type="submit"
                 disabled={isLoading}

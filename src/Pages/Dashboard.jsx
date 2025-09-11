@@ -78,6 +78,15 @@ const Dashboard = () => {
     },
   };
 
+  const actionVariants = {
+    hover: {
+      scale: 1.05,
+      boxShadow: "0 8px 24px rgba(0, 0, 0, 0.1)",
+      transition: { duration: 0.3, ease: "easeOut" },
+    },
+    tap: { scale: 0.95, transition: { duration: 0.2 } },
+  };
+
   return (
     <>
       <div className="min-h-screen bg-gradient-hero p-8">
@@ -268,35 +277,46 @@ const Dashboard = () => {
           {/* Quick Actions */}
           <motion.div
             variants={itemVariants}
-            className="mt-6"
+            className="mt-8"
           >
-            <div className="card p-6 bg-white shadow-md rounded-xl">
-              <h2 className="text-xl font-bold text-neutral-800 mb-4">Quick Actions</h2>
-              <div className="flex flex-wrap justify-center gap-3">
-                <motion.button
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="flex items-center justify-center space-x-2 px-4 py-2 rounded-lg bg-primary-500 text-white font-medium shadow-md hover:shadow-lg hover:bg-primary-600 transition-all duration-200"
+            <div className="card p-8 bg-white rounded-2xl shadow-sm">
+              <h2 className="text-xl font-semibold text-neutral-800 mb-6 tracking-tight">
+                Quick Actions
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <motion.div
+                  variants={actionVariants}
+                  whileHover="hover"
+                  whileTap="tap"
+                  className="flex items-center space-x-3 p-4 bg-neutral-50 rounded-xl hover:bg-gradient-to-r hover:from-primary-50 hover:to-primary-100 cursor-pointer transition-all duration-300"
                 >
-                  <Car className="w-4 h-4" />
-                  <span>New Auction</span>
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="flex items-center justify-center space-x-2 px-4 py-2 rounded-lg bg-primary-500 text-white font-medium shadow-md hover:shadow-lg hover:bg-primary-600 transition-all duration-200"
+                  <div className="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center">
+                    <Car className="w-5 h-5 text-primary-600" />
+                  </div>
+                  <span className="text-sm font-medium text-neutral-800">New Auction</span>
+                </motion.div>
+                <motion.div
+                  variants={actionVariants}
+                  whileHover="hover"
+                  whileTap="tap"
+                  className="flex items-center space-x-3 p-4 bg-neutral-50 rounded-xl hover:bg-gradient-to-r hover:from-blue-50 hover:to-blue-100 cursor-pointer transition-all duration-300"
                 >
-                  <Calendar className="w-4 h-4" />
-                  <span>Book Appointment</span>
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="flex items-center justify-center space-x-2 px-4 py-2 rounded-lg bg-primary-500 text-white font-medium shadow-md hover:shadow-lg hover:bg-primary-600 transition-all duration-200"
+                  <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <Calendar className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <span className="text-sm font-medium text-neutral-800">Book Appointment</span>
+                </motion.div>
+                <motion.div
+                  variants={actionVariants}
+                  whileHover="hover"
+                  whileTap="tap"
+                  className="flex items-center space-x-3 p-4 bg-neutral-50 rounded-xl hover:bg-gradient-to-r hover:from-green-50 hover:to-green-100 cursor-pointer transition-all duration-300"
                 >
-                  <Users className="w-4 h-4" />
-                  <span>All Auctions</span>
-                </motion.button>
+                  <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                    <Users className="w-5 h-5 text-green-600" />
+                  </div>
+                  <span className="text-sm font-medium text-neutral-800">All Auctions</span>
+                </motion.div>
               </div>
             </div>
           </motion.div>

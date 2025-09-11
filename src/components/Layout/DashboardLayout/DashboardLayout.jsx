@@ -116,7 +116,7 @@ const DashboardLayout = ({ children }) => {
         } pt-16 lg:pt-0`}
       >
         {/* Desktop Header */}
-        <div className="hidden lg:block bg-white border-b border-neutral-200 shadow-md">
+        <div className="hidden h-20 lg:block bg-white border-b border-neutral-200 shadow-md">
           <div className="flex items-center justify-between px-6 py-4 bg-gradient-to-r from-white to-neutral-50">
             {/* Left Side: Search Bar */}
             <div className="flex items-center flex-1 max-w-lg">

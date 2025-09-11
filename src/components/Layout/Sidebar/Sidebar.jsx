@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useLocation } from 'react-router-dom';
 import { 
@@ -17,10 +17,12 @@ import {
   Plus
 } from 'lucide-react';
 import Modal from '@/components/ui/modal';
+import { AuthContext } from '@/contexts/AuthContext';
 
 const Sidebar = ({ isCollapsed, onToggle }) => {
   const location = useLocation();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const { logout } = useContext(AuthContext);
 
   const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -42,8 +44,8 @@ const Sidebar = ({ isCollapsed, onToggle }) => {
       name: 'Logout', 
       icon: LogOut, 
       action: () => {
-        console.log('Logging out...');
-      }
+        logout(); // Call the logout function from AuthContext
+      },
     }
   ];
 

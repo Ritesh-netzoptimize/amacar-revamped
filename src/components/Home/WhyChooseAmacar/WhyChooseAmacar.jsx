@@ -78,7 +78,7 @@ export default function WhyChooseAmacar() {
                     viewport={{ once: true, margin: "-100px" }}
                 >
                     <h2 className="why-choose-title">
-                        Why Choose <span className="title-accent">Amacar</span>
+                        Why Choose <span className="text-[var(--brand-orange)] text-7xl font-extrabold">Amacar</span>
                     </h2>
                     <div className="title-underline"></div>
                 </motion.div>

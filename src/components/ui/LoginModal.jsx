@@ -1,247 +1,206 @@
-import React, { useEffect, useState } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import { Loader2, CheckCircle2, Mail, Lock, Eye, EyeOff, ShieldCheck, Sparkles, User, XCircle } from "lucide-react"
+// Updated src/components/Auth/LoginModal.jsx (Fixed resetToken handling and integrated with AuthContext)
+import React, { useEffect, useState, useContext } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Loader2, CheckCircle2, Mail, Lock, Eye, EyeOff, ShieldCheck, Sparkles, User, XCircle } from "lucide-react";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
-} from "@/components/ui/dialog"
-import toast from "react-hot-toast"
-import { useNavigate } from "react-router-dom"
+} from "@/components/ui/dialog";
+import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 import {
   InputOTP,
   InputOTPGroup,
   InputOTPSlot,
-} from "@/components/ui/input-otp"
+} from "@/components/ui/input-otp";
+import { AuthContext } from "@/contexts/AuthContext";
+import useAuth from "@/hooks/useAuth";
 
 export default function LoginModal({
   isOpen,
   onClose,
-  onForgotPassword,
-  onRegister,
   title = "Login to Your Account",
   description = "Enter your credentials to access your account",
 }) {
-  // UI state
-  const [email, setEmail] = useState("")
-  const [username, setUsername] = useState("")
-  const [password, setPassword] = useState("")
-  const [confirmPassword, setConfirmPassword] = useState("")
-  const [otp, setOtp] = useState("")
-  const [newPassword, setNewPassword] = useState("")
+  const { login, register, forgotPassword, verifyOTP, resetPassword } = useContext(AuthContext);
+  const { values, errors, setValue, setError, resetForm } = useAuth();
 
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [showNewPassword, setShowNewPassword] = useState(false)
-
-  const [errors, setErrors] = useState({ email: "", username: "", password: "", confirmPassword: "", otp: "", newPassword: "" })
-  const [phase, setPhase] = useState("form") // form | loading | success | failed | forgot | verify-otp | reset-password
-  const [isLoading, setIsLoading] = useState(false)
-  const [isRegisterMode, setIsRegisterMode] = useState(false)
-  const [isForgotPasswordMode, setIsForgotPasswordMode] = useState(false)
-
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [phase, setPhase] = useState("form"); // form | loading | success | failed | forgot | verify-otp | reset-password
+  const [isLoading, setIsLoading] = useState(false);
+  const [isRegisterMode, setIsRegisterMode] = useState(false);
+  const [isForgotPasswordMode, setIsForgotPasswordMode] = useState(false);
+  const [resetToken, setResetToken] = useState(null); // Added state for resetToken
 
   const navigate = useNavigate();
-
-  const isCloseDisabled = phase === "loading" || phase === "verify-otp"
+  const isCloseDisabled = phase === "loading" || phase === "verify-otp";
 
   function validate() {
-    const newErrors = { email: "", username: "", password: "", confirmPassword: "", otp: "", newPassword: "" }
-    
-    // Email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!email) {
-      newErrors.email = "Email is required"
-    } else if (!emailRegex.test(email)) {
-      newErrors.email = "Please enter a valid email address"
+    const newErrors = { email: "", username: "", password: "", confirmPassword: "", otp: "", newPassword: "" };
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!values.email) {
+      newErrors.email = "Email is required";
+    } else if (!emailRegex.test(values.email)) {
+      newErrors.email = "Please enter a valid email address";
     }
-    
-    // Username validation (only for register mode)
-    if (isRegisterMode && !username) {
-      newErrors.username = "Username is required"
-    } else if (isRegisterMode && username.length < 3) {
-      newErrors.username = "Username must be at least 3 characters"
+
+    if (isRegisterMode && !values.username) {
+      newErrors.username = "Username is required";
+    } else if (isRegisterMode && values.username?.length < 3) {
+      newErrors.username = "Username must be at least 3 characters";
     }
-    
-    // Password validation (for login/register)
-    if ((isRegisterMode || !isForgotPasswordMode) && !password) {
-      newErrors.password = "Password is required"
-    } else if ((isRegisterMode || !isForgotPasswordMode) && password.length < 6) {
-      newErrors.password = "Password must be at least 6 characters"
+
+    if ((isRegisterMode || !isForgotPasswordMode) && !values.password) {
+      newErrors.password = "Password is required";
+    } else if ((isRegisterMode || !isForgotPasswordMode) && values.password?.length < 6) {
+      newErrors.password = "Password must be at least 6 characters";
     }
-    
-    // Confirm password validation (only for register mode)
-    if (isRegisterMode && !confirmPassword) {
-      newErrors.confirmPassword = "Please confirm your password"
-    } else if (isRegisterMode && confirmPassword !== password) {
-      newErrors.confirmPassword = "Passwords do not match"
+
+    if ((isRegisterMode || phase === "reset-password") && !values.confirmPassword) {
+      newErrors.confirmPassword = "Please confirm your password";
+    } else if ((isRegisterMode || phase === "reset-password") && values.confirmPassword !== values.password) {
+      newErrors.confirmPassword = "Passwords do not match";
     }
-    
-    // New password validation (for reset password)
-    if (phase === "reset-password" && !newPassword) {
-      newErrors.newPassword = "New password is required"
-    } else if (phase === "reset-password" && newPassword.length < 6) {
-      newErrors.newPassword = "New password must be at least 6 characters"
-    } else if (phase === "reset-password" && newPassword !== confirmPassword) {
-      newErrors.newPassword = "Passwords do not match"
+
+    if (phase === "reset-password" && !values.newPassword) {
+      newErrors.newPassword = "New password is required";
+    } else if (phase === "reset-password" && values.newPassword?.length < 6) {
+      newErrors.newPassword = "New password must be at least 6 characters";
     }
-    
-    setErrors(newErrors)
-    return !newErrors.email && !newErrors.username && !newErrors.password && !newErrors.confirmPassword && !newErrors.newPassword
+
+    Object.keys(newErrors).forEach((key) => {
+      if (newErrors[key]) setError(key, newErrors[key]);
+      else setError(key, "");
+    });
+
+    return Object.values(newErrors).every((error) => !error);
   }
 
   function validateOtp() {
-    const newErrors = { ...errors, otp: "" }
-    if (!otp) {
-      newErrors.otp = "OTP is required"
-    } else if (!/^\d{6}$/.test(otp)) {
-      newErrors.otp = "OTP must be a 6-digit number"
-    } else if (otp !== "123456") {
-      newErrors.otp = "Invalid OTP"
+    const newErrors = { ...errors, otp: "" };
+    if (!values.otp) {
+      newErrors.otp = "OTP is required";
+    } else if (!/^\d{6}$/.test(values.otp)) {
+      newErrors.otp = "OTP must be a 6-digit number";
     }
-    setErrors(newErrors)
-    return !newErrors.otp
+    setError("otp", newErrors.otp || "");
+    return !newErrors.otp;
   }
 
-  function startAction() {
-    setPhase("loading")
-    setIsLoading(true)
-    
-    // Simulate account creation/login/reset process
-    setTimeout(() => {
-      setPhase("success")
-      setIsLoading(false)
-    }, 2000)
+  async function handleAction(action, ...args) {
+    setPhase("loading");
+    setIsLoading(true);
+    try {
+      await action(...args);
+      setPhase("success");
+    } catch (error) {
+      setPhase("failed");
+      toast.error(error.message || "An error occurred. Please try again.", { duration: 2000 });
+    } finally {
+      setIsLoading(false);
+    }
   }
 
-  function handleFailedRegistration() {
-    setPhase("loading")
-    setIsLoading(true)
-    
-    // Simulate failed registration process
-    setTimeout(() => {
-      setPhase("failed")
-      setIsLoading(false)
-      toast.error("Registration failed: Please try again", { duration: 2000 })
-    }, 2000)
-  }
+  async function handleSubmit(e) {
+    e?.preventDefault();
+    if (!validate()) return;
 
-  function handleSubmit(e) {
-    e?.preventDefault()
     if (isRegisterMode) {
-      if (validate()) {
-        startAction()
-      }
+      await handleAction(register, { email: values.email, username: values.username, password: values.password });
     } else if (isForgotPasswordMode && phase === "forgot") {
-      if (validate()) {
-        setPhase("verify-otp")
-        toast.success("OTP sent to your email", { duration: 2000 })
+      await handleAction(forgotPassword, { email: values.email });
+      if (phase !== "failed") {
+        setPhase("verify-otp");
+        // toast.success("OTP sent to your email", { duration: 2000 });
       }
     } else if (phase === "reset-password") {
-      if (validate()) {
-        startAction()
-      }
+      await handleAction(resetPassword, resetToken, values.newPassword);
     } else {
-      if (validate()) {
-        startAction()
-      }
+      await handleAction(login, { username: values.email, password: values.password });
     }
   }
 
-  function handleOtpSubmit(e) {
-    e?.preventDefault()
-    if (validateOtp()) {
-      if (isForgotPasswordMode) {
-        setPhase("reset-password")
-      }
+  async function handleOtpSubmit(e) {
+    e?.preventDefault();
+    if (!validateOtp()) return;
+
+    setPhase("loading");
+    setIsLoading(true);
+    try {
+      const token = await verifyOTP({ email: values.email, otp: values.otp });
+      setResetToken(token);
+      setPhase("reset-password");
+    } catch (error) {
+      setPhase("failed");
+      setError("otp", error.message || "Invalid OTP");
+      toast.error(error.message || "Invalid OTP", { duration: 2000 });
+    } finally {
+      setIsLoading(false);
     }
   }
 
   function handleOtpModalClose(open) {
     if (!open && !isLoading) {
       if (isForgotPasswordMode) {
-        setIsForgotPasswordMode(false)
-        setPhase("form")
-        setErrors({ email: "", username: "", password: "", confirmPassword: "", otp: "", newPassword: "" })
-        setEmail("")
-        setOtp("")
+        setIsForgotPasswordMode(false);
+        setPhase("form");
+        resetForm();
       }
     }
   }
 
   function handleSuccessAction() {
-    toast.success(phase === "reset-password" ? "Password updated successfully" : "Redirecting to dashboard", {
-      duration: 2000,
-    })
+    toast.success(
+      phase === "reset-password" ? "Password updated successfully" : "Redirecting to dashboard",
+      { duration: 2000 }
+    );
 
     setTimeout(() => {
-      onClose(false)
+      onClose(false);
       if (phase === "reset-password") {
-        setIsForgotPasswordMode(false)
-        setPhase("form")
-        setErrors({ email: "", username: "", password: "", confirmPassword: "", otp: "", newPassword: "" })
-        setEmail("")
-        setPassword("")
-        setConfirmPassword("")
-        setNewPassword("")
-        setOtp("")
+        setIsForgotPasswordMode(false);
+        setPhase("form");
+        resetForm();
       } else {
-        console.log(`${isRegisterMode ? "Registration" : "Login"} successful - redirect to dashboard`)
-        navigate("/dashboard")
+        navigate("/dashboard");
       }
-    }, 2000)
+    }, 2000);
   }
 
   function handleBackToForm() {
-    setPhase("form")
-    setErrors({ email: "", username: "", password: "", confirmPassword: "", otp: "", newPassword: "" })
-    setOtp("")
-    setNewPassword("")
+    setPhase("form");
+    resetForm();
   }
 
   function handleForgotPassword() {
-    setIsForgotPasswordMode(true)
-    setPhase("forgot")
-    setErrors({ email: "", username: "", password: "", confirmPassword: "", otp: "", newPassword: "" })
-    setEmail("")
-    setUsername("")
-    setPassword("")
-    setConfirmPassword("")
-    setOtp("")
-    setNewPassword("")
+    setIsForgotPasswordMode(true);
+    setPhase("forgot");
+    resetForm();
   }
 
   function handleRegister() {
-    setIsRegisterMode(true)
-    setErrors({ email: "", username: "", password: "", confirmPassword: "", otp: "", newPassword: "" })
-    setEmail("")
-    setUsername("")
-    setPassword("")
-    setConfirmPassword("")
-    setOtp("")
-    setNewPassword("")
+    setIsRegisterMode(true);
+    resetForm();
   }
 
   function handleBackToLogin() {
-    setIsRegisterMode(false)
-    setIsForgotPasswordMode(false)
-    setErrors({ email: "", username: "", password: "", confirmPassword: "", otp: "", newPassword: "" })
-    setEmail("")
-    setUsername("")
-    setPassword("")
-    setConfirmPassword("")
-    setOtp("")
-    setNewPassword("")
-    setPhase("form")
+    setIsRegisterMode(false);
+    setIsForgotPasswordMode(false);
+    setPhase("form");
+    resetForm();
   }
 
   useEffect(() => {
     if (phase === "success") {
-      handleSuccessAction()
+      handleSuccessAction();
     }
-  }, [phase])
+  }, [phase]);
 
   return (
     <>
@@ -253,18 +212,26 @@ export default function LoginModal({
           <div className="bg-gradient-to-br from-white via-slate-50 to-slate-100 p-6">
             <DialogHeader>
               <DialogTitle className="text-2xl font-semibold tracking-tight text-slate-900">
-                {isRegisterMode ? "Create Your Account" : 
-                 isForgotPasswordMode && phase === "forgot" ? "Forgot Password" : 
-                 isForgotPasswordMode && phase === "verify-otp" ? "Verify OTP" : 
-                 isForgotPasswordMode && phase === "reset-password" ? "Reset Password" : 
-                 title}
+                {isRegisterMode
+                  ? "Create Your Account"
+                  : isForgotPasswordMode && phase === "forgot"
+                  ? "Forgot Password"
+                  : isForgotPasswordMode && phase === "verify-otp"
+                  ? "Verify OTP"
+                  : isForgotPasswordMode && phase === "reset-password"
+                  ? "Reset Password"
+                  : title}
               </DialogTitle>
               <DialogDescription className="text-sm text-slate-600">
-                {isRegisterMode ? "Fill in the details to register a new account" : 
-                 phase === "forgot" ? "Enter your email to receive a verification OTP" : 
-                 phase === "verify-otp" ? `We’ve sent a 6-digit OTP to ${email}. Please enter it below.` : 
-                 phase === "reset-password" ? "Enter your new password" : 
-                 description}
+                {isRegisterMode
+                  ? "Fill in the details to register a new account"
+                  : phase === "forgot"
+                  ? "Enter your email to receive a verification OTP"
+                  : phase === "verify-otp"
+                  ? `We’ve sent a 6-digit OTP to ${values.email}. Please enter it below.`
+                  : phase === "reset-password"
+                  ? "Enter your new password"
+                  : description}
               </DialogDescription>
             </DialogHeader>
           </div>
@@ -294,14 +261,14 @@ export default function LoginModal({
                         <input
                           id="email"
                           type="email"
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
+                          value={values.email || ""}
+                          onChange={(e) => setValue("email", e.target.value)}
                           placeholder="user@example.com"
                           className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-9 pr-3 text-sm outline-none ring-0 transition-shadow focus:shadow-[0_0_0_4px_rgba(15,23,42,0.08)]"
                         />
                       </div>
                       {errors.email && (
-                        <motion.p 
+                        <motion.p
                           initial={{ opacity: 0, y: -4 }}
                           animate={{ opacity: 1, y: 0 }}
                           className="text-xs text-red-600"
@@ -325,14 +292,14 @@ export default function LoginModal({
                         <input
                           id="username"
                           type="text"
-                          value={username}
-                          onChange={(e) => setUsername(e.target.value)}
+                          value={values.username || ""}
+                          onChange={(e) => setValue("username", e.target.value)}
                           placeholder="Your username"
                           className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-9 pr-3 text-sm outline-none ring-0 transition-shadow focus:shadow-[0_0_0_4px_rgba(15,23,42,0.08)]"
                         />
                       </div>
                       {errors.username && (
-                        <motion.p 
+                        <motion.p
                           initial={{ opacity: 0, y: -4 }}
                           animate={{ opacity: 1, y: 0 }}
                           className="text-xs text-red-600"
@@ -356,8 +323,8 @@ export default function LoginModal({
                         <input
                           id="password"
                           type={showPassword ? "text" : "password"}
-                          value={password}
-                          onChange={(e) => setPassword(e.target.value)}
+                          value={values.password || ""}
+                          onChange={(e) => setValue("password", e.target.value)}
                           placeholder="••••••••"
                           className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-9 pr-10 text-sm outline-none ring-0 transition-shadow focus:shadow-[0_0_0_4px_rgba(15,23,42,0.08)]"
                         />
@@ -366,15 +333,11 @@ export default function LoginModal({
                           onClick={() => setShowPassword(!showPassword)}
                           className="cursor-pointer absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
                         >
-                          {showPassword ? (
-                            <EyeOff className="h-4 w-4" />
-                          ) : (
-                            <Eye className="h-4 w-4" />
-                          )}
+                          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                         </button>
                       </div>
                       {errors.password && (
-                        <motion.p 
+                        <motion.p
                           initial={{ opacity: 0, y: -4 }}
                           animate={{ opacity: 1, y: 0 }}
                           className="text-xs text-red-600"
@@ -398,8 +361,8 @@ export default function LoginModal({
                         <input
                           id="newPassword"
                           type={showNewPassword ? "text" : "password"}
-                          value={newPassword}
-                          onChange={(e) => setNewPassword(e.target.value)}
+                          value={values.newPassword || ""}
+                          onChange={(e) => setValue("newPassword", e.target.value)}
                           placeholder="••••••••"
                           className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-9 pr-10 text-sm outline-none ring-0 transition-shadow focus:shadow-[0_0_0_4px_rgba(15,23,42,0.08)]"
                         />
@@ -408,15 +371,11 @@ export default function LoginModal({
                           onClick={() => setShowNewPassword(!showNewPassword)}
                           className="cursor-pointer absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
                         >
-                          {showNewPassword ? (
-                            <EyeOff className="h-4 w-4" />
-                          ) : (
-                            <Eye className="h-4 w-4" />
-                          )}
+                          {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                         </button>
                       </div>
                       {errors.newPassword && (
-                        <motion.p 
+                        <motion.p
                           initial={{ opacity: 0, y: -4 }}
                           animate={{ opacity: 1, y: 0 }}
                           className="text-xs text-red-600"
@@ -440,8 +399,8 @@ export default function LoginModal({
                         <input
                           id="confirmPassword"
                           type={showConfirmPassword ? "text" : "password"}
-                          value={confirmPassword}
-                          onChange={(e) => setConfirmPassword(e.target.value)}
+                          value={values.confirmPassword || ""}
+                          onChange={(e) => setValue("confirmPassword", e.target.value)}
                           placeholder="••••••••"
                           className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-9 pr-10 text-sm outline-none ring-0 transition-shadow focus:shadow-[0_0_0_4px_rgba(15,23,42,0.08)]"
                         />
@@ -450,15 +409,11 @@ export default function LoginModal({
                           onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                           className="cursor-pointer absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
                         >
-                          {showConfirmPassword ? (
-                            <EyeOff className="h-4 w-4" />
-                          ) : (
-                            <Eye className="h-4 w-4" />
-                          )}
+                          {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                         </button>
                       </div>
                       {errors.confirmPassword && (
-                        <motion.p 
+                        <motion.p
                           initial={{ opacity: 0, y: -4 }}
                           animate={{ opacity: 1, y: 0 }}
                           className="text-xs text-red-600"
@@ -479,16 +434,22 @@ export default function LoginModal({
                       {isLoading ? (
                         <div className="flex items-center justify-center gap-2">
                           <Loader2 className="h-4 w-4 animate-spin" />
-                          {isRegisterMode ? "Registering..." : 
-                           phase === "forgot" ? "Sending OTP..." : 
-                           phase === "reset-password" ? "Updating Password..." : 
-                           "Signing In..."}
+                          {isRegisterMode
+                            ? "Registering..."
+                            : phase === "forgot"
+                            ? "Sending OTP..."
+                            : phase === "reset-password"
+                            ? "Updating Password..."
+                            : "Signing In..."}
                         </div>
                       ) : (
-                        isRegisterMode ? "Register" : 
-                        phase === "forgot" ? "Send OTP" : 
-                        phase === "reset-password" ? "Update Password" : 
-                        "Login"
+                        isRegisterMode
+                          ? "Register"
+                          : phase === "forgot"
+                          ? "Send OTP"
+                          : phase === "reset-password"
+                          ? "Update Password"
+                          : "Login"
                       )}
                     </button>
                   </div>
@@ -507,10 +468,10 @@ export default function LoginModal({
                   )}
 
                   {/* Toggle Login/Register Link */}
-                  {((phase === "form" || phase === "forgot") && !isForgotPasswordMode) && (
+                  {(phase === "form" || phase === "forgot") && !isForgotPasswordMode && (
                     <div className="text-center">
                       <p className="text-xs text-slate-600">
-                        {isRegisterMode  ? "Already have an account?" : "Don't have an account?"}{" "}
+                        {isRegisterMode ? "Already have an account?" : "Don't have an account?"}{" "}
                         <button
                           type="button"
                           onClick={isRegisterMode ? handleBackToLogin : handleRegister}
@@ -543,9 +504,11 @@ export default function LoginModal({
                     <div className="flex items-center gap-3 p-4">
                       <Loader2 className="h-5 w-5 animate-spin text-slate-700" />
                       <span className="text-sm text-slate-700">
-                        {isRegisterMode ? "Processing registration..." : 
-                         isForgotPasswordMode && phase === "reset-password" ? "Updating password..." : 
-                         "Authenticating your credentials..."}
+                        {isRegisterMode
+                          ? "Processing registration..."
+                          : isForgotPasswordMode && phase === "reset-password"
+                          ? "Updating password..."
+                          : "Authenticating your credentials..."}
                       </span>
                     </div>
                     <div className="h-1 w-full bg-slate-200">
@@ -553,14 +516,18 @@ export default function LoginModal({
                         className="h-1 bg-slate-800"
                         initial={{ width: "0%" }}
                         animate={{ width: "100%" }}
-                        transition={{ ease: 'easeOut', duration: 1.8 }}
+                        transition={{ ease: "easeOut", duration: 1.8 }}
                       />
                     </div>
                   </div>
                   <div className="text-sm text-slate-600">
-                    Please wait while we {isRegisterMode ? "process your registration" : 
-                     isForgotPasswordMode && phase === "reset-password" ? "update your password" : 
-                     "verify your account"}...
+                    Please wait while we{" "}
+                    {isRegisterMode
+                      ? "process your registration"
+                      : isForgotPasswordMode && phase === "reset-password"
+                      ? "update your password"
+                      : "verify your account"}
+                    ...
                   </div>
                 </motion.div>
               )}
@@ -574,11 +541,11 @@ export default function LoginModal({
                   transition={{ type: "spring", stiffness: 260, damping: 20 }}
                   className="grid gap-5 mt-[4rem] place-items-center text-center"
                 >
-                  <motion.div 
-                    className="relative" 
-                    initial={{ scale: 0.9, opacity: 0 }} 
-                    animate={{ scale: 1, opacity: 1 }} 
-                    transition={{ type: 'spring', stiffness: 340, damping: 18 }}
+                  <motion.div
+                    className="relative"
+                    initial={{ scale: 0.9, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ type: "spring", stiffness: 340, damping: 18 }}
                   >
                     <div className="grid place-items-center rounded-2xl border border-green-200 bg-gradient-to-b from-white to-emerald-50 p-4 shadow-sm">
                       <CheckCircle2 className="h-14 w-14 text-green-500" />
@@ -587,14 +554,18 @@ export default function LoginModal({
                   </motion.div>
                   <div className="space-y-1">
                     <h3 className="text-lg font-semibold text-slate-900">
-                      {isRegisterMode ? "Account Created!" : 
-                       isForgotPasswordMode ? "Password Updated!" : 
-                       "Welcome back!"}
+                      {isRegisterMode
+                        ? "Account Created!"
+                        : isForgotPasswordMode
+                        ? "Password Updated!"
+                        : "Welcome back!"}
                     </h3>
                     <p className="text-sm text-slate-600">
-                      {isRegisterMode ? "Your account has been successfully created." : 
-                       isForgotPasswordMode ? "Your password has been successfully updated." : 
-                       "You have been successfully logged in."}
+                      {isRegisterMode
+                        ? "Your account has been successfully created."
+                        : isForgotPasswordMode
+                        ? "Your password has been successfully updated."
+                        : "You have been successfully logged in."}
                     </p>
                   </div>
                 </motion.div>
@@ -609,23 +580,19 @@ export default function LoginModal({
                   transition={{ type: "spring", stiffness: 260, damping: 20 }}
                   className="grid gap-5 mt-[4rem] place-items-center text-center"
                 >
-                  <motion.div 
-                    className="relative" 
-                    initial={{ scale: 0.9, opacity: 0 }} 
-                    animate={{ scale: 1, opacity: 1 }} 
-                    transition={{ type: 'spring', stiffness: 340, damping: 18 }}
+                  <motion.div
+                    className="relative"
+                    initial={{ scale: 0.9, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ type: "spring", stiffness: 340, damping: 18 }}
                   >
                     <div className="grid place-items-center rounded-2xl border border-red-200 bg-gradient-to-b from-white to-red-50 p-4 shadow-sm">
                       <XCircle className="h-14 w-14 text-red-500" />
                     </div>
                   </motion.div>
                   <div className="space-y-1">
-                    <h3 className="text-lg font-semibold text-slate-900">
-                      Registration Failed
-                    </h3>
-                    <p className="text-sm text-slate-600">
-                      Please try again.
-                    </p>
+                    <h3 className="text-lg font-semibold text-slate-900">Operation Failed</h3>
+                    <p className="text-sm text-slate-600">Please try again.</p>
                   </div>
                   <button
                     onClick={handleBackToForm}
@@ -649,7 +616,7 @@ export default function LoginModal({
                 Verify OTP
               </DialogTitle>
               <DialogDescription className="text-sm text-slate-600">
-                We’ve sent a 6-digit OTP to {email}. Please enter it below.
+                We’ve sent a 6-digit OTP to {values.email}. Please enter it below.
               </DialogDescription>
             </DialogHeader>
             <motion.form
@@ -659,43 +626,39 @@ export default function LoginModal({
               transition={{ duration: 0.25, ease: "easeOut" }}
               className="grid gap-5"
             >
-             <div className="grid gap-2">
-  <label htmlFor="otp" className="text-sm font-medium text-slate-800">
-    OTP
-  </label>
-
-  {/* Shadcn InputOTP */}
-  <InputOTP
-    id="otp"
-    maxLength={6}
-    value={otp}
-    onChange={setOtp} // same setter you used before
-    className="flex gap-2"
-  >
-    <InputOTPGroup className="flex gap-2">
-      {Array(6)
-        .fill(null)
-        .map((_, i) => (
-          <InputOTPSlot
-            key={i}
-            index={i}
-            className=" h-11 w-11 rounded-lg border border-slate-200 bg-white text-center text-lg font-medium outline-none ring-0 transition-shadow "
-          />
-        ))}
-    </InputOTPGroup>
-  </InputOTP>
-
-  {/* Error message */}
-  {errors.otp && (
-    <motion.p
-      initial={{ opacity: 0, y: -4 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="text-xs text-red-600"
-    >
-      {errors.otp}
-    </motion.p>
-  )}
-</div>
+              <div className="grid gap-2">
+                <label htmlFor="otp" className="text-sm font-medium text-slate-800">
+                  OTP
+                </label>
+                <InputOTP
+                  id="otp"
+                  maxLength={6}
+                  value={values.otp || ""}
+                  onChange={(value) => setValue("otp", value)}
+                  className="flex gap-2"
+                >
+                  <InputOTPGroup className="flex gap-2">
+                    {Array(6)
+                      .fill(null)
+                      .map((_, i) => (
+                        <InputOTPSlot
+                          key={i}
+                          index={i}
+                          className="h-11 w-11 rounded-lg border border-slate-200 bg-white text-center text-lg font-medium outline-none ring-0 transition-shadow"
+                        />
+                      ))}
+                  </InputOTPGroup>
+                </InputOTP>
+                {errors.otp && (
+                  <motion.p
+                    initial={{ opacity: 0, y: -4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="text-xs text-red-600"
+                  >
+                    {errors.otp}
+                  </motion.p>
+                )}
+              </div>
               <button
                 type="submit"
                 disabled={isLoading}
@@ -715,5 +678,5 @@ export default function LoginModal({
         </Dialog>
       )}
     </>
-  )
+  );
 }

@@ -64,6 +64,14 @@
     position: relative;
 }
 
+.title-plain{
+    /* font-extrabold text-8xl text-[var(--brand-orange)] */
+    font-weight: 700;
+    color: var(--brand-orange);
+    /* font-size: x-large; */
+    font-size: 80px;
+}
+
 .title-underline {
     width: 120px;
     height: 3px;

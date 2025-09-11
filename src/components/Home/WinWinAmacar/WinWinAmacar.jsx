@@ -92,7 +92,7 @@ export default function WinWinAmacar() {
                     viewport={{ once: true, margin: "-100px" }}
                 >
                     <h2 className="win-win-title">
-                        Creating a Win-Win Situation with <span className="title-accent">Amacar</span>
+                        Creating a Win-Win Situation with <span className="title-plain">Amacar</span>
                     </h2>  
                     <div className="title-underline"></div>
                     <p className="win-win-description">

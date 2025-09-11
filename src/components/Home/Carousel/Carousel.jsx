@@ -51,7 +51,7 @@ export default function Carousel() {
     }
 
     return (
-        <div className="carousel w-full">
+        <div className="carousel w-full ">
             <div className="max-w-6xl mx-auto px-6 py-12 carousel-outer-div">
                 <div className="relative overflow-hidden rounded-lg carousel-inner-div">
                     {slides.map((s, i) => (

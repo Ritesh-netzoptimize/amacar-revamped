@@ -46,7 +46,7 @@
 
 .why-choose-title {
     font-size: clamp(2.5rem, 5vw, 3.5rem);
-    font-weight: 800;
+    font-weight: 400;
     color: var(--text-primary);
     margin: 0 0 20px 0;
     line-height: 1.1;
@@ -240,7 +240,7 @@
 }
 
 .cta-button {
-    background: linear-gradient(135deg, var(--brand-orange), var(--accent));
+    background: var(--brand-orange);
     color: white;
     padding: 16px 32px;
     border: none;

@@ -1,10 +1,12 @@
-import { useState } from 'react'
+import { useContext, useState } from 'react'
 import './header.css'
 import LoginModal from '@/components/ui/LoginModal'
+import { AuthContext } from '@/contexts/AuthContext'
 
 export default function Header() {
     const [open, setOpen] = useState(false)
     const [loginModalOpen, setLoginModalOpen] = useState(false)
+    const {user, logout} = useContext(AuthContext);
 
     const handleLoginClick = (e) => {
         e.preventDefault()
@@ -44,9 +46,13 @@ export default function Header() {
 
                     {/* right: actions */}
                     <div style={{ display: 'flex', justifyContent: 'flex-end', minWidth: 180 }}>
-                        <div className="actions-desktop">
+                        {
+                            !user ? <div className="actions-desktop">
                             <a className="btn-login" href="#" onClick={handleLoginClick}>Login / Register</a>
-                        </div>
+                        </div> : <div className="actions-desktop">
+                            <div className="btn-login cursor-pointer"  onClick={() => logout()}>Logout</div>
+                        </div> 
+                        }
 
                         <div className="mobile-toggle" style={{ display: 'flex', alignItems: 'center', marginLeft: 8 }}>
                             <button aria-label="Toggle menu" aria-expanded={open} onClick={() => setOpen(!open)} className={`hamburger-btn`}>
@@ -69,9 +75,14 @@ export default function Header() {
                         <a className="nav-link-mobile" href="#">Join Our Dealer Network</a>
                         <a className="nav-link-mobile" href="#">Our Vision</a>
                     </nav>
-                    <div style={{ marginTop: 12 }}>
+                    {
+                        !user ? <div style={{ marginTop: 12 }}>
                         <a className="btn-login-mobile" href="#" onClick={handleLoginClick}>Login / Register</a>
+                    </div> : <div style={{ marginTop: 12 }}>
+                        <a className="btn-login-mobile" href="#" onClick={() => logout}>Logout</a>
                     </div>
+                    
+                    }
                 </div>
             </div>
 

@@ -53,7 +53,7 @@ export default function TwoColumnSection() {
                             Unlock The Best Offers And Streamline Your Selling Process With Just A Few Clicks.
                         </p>
                         <motion.button
-                            className="bg-gradient-to-r cursor-pointer from-orange-600 to-orange-700 hover:from-blue-700 hover:to-blue-800 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 hover:scale-105 shadow-md hover:shadow-lg"
+                            className=" cursor-pointer bg-[var(--brand-orange)] hover:from-orange-700 hover:to-orange-800 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 hover:scale-105 shadow-md hover:shadow-lg"
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                         >

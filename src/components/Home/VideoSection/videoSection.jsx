@@ -31,6 +31,7 @@ export default function VideoSection() {
                 <p className='left-text-content'>
                     Skip the hassle of endless listings and lowball offers. With Amacar, dealers compete to buy your car, giving you the best price quickly, securely, and stress-free—cash in hand, without compromise.
                 </p>
+                <button className='border-2 border-purple mt-4 px-[1rem] py-[0.6rem] transition ease-in-out 3s bg-[var(--brand-purple)] text-white rounded-md text-bold hover:cursor-pointer hover:bg-white hover:border hover:border-2 hover:border-[var(--brand-purple)] hover:text-[var(--brand-purple)] '>Start now</button>
             </motion.div>
 
             {/* Right Video Section */}

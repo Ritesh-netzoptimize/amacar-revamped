@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { useContext, useState } from "react"
 import { motion } from "framer-motion"
 import "./hero.css"
 import bgImg from "../../../assets/home_Page_first_hero(10).jpg"
@@ -9,10 +9,14 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import AuctionModal from "@/components/ui/AuctionYourRideModal"
+import { Link } from "react-router-dom"
+import { AuthContext } from "@/contexts/AuthContext"
+
 
 export default function Hero() {
   const [open, setOpen] = useState(false)
   const [auctionOpen, setAuctionOpen] = useState(false);
+  const {user, logout} = useContext(AuthContext); 
 
   // 🔹 Variants for animation
   const fadeUp = {
@@ -51,7 +55,8 @@ export default function Hero() {
             }}>
             Get Your Instant Offer
           </a>
-          <button
+          {
+            !user ? <button
             onClick={(e) => {
               e.preventDefault()
               setAuctionOpen(true)
@@ -59,7 +64,8 @@ export default function Hero() {
             className="cursor-pointer btn-purple"
           >
             Auction Your Ride
-          </button  >
+          </button  > : <Link to={'/dashboard'} className="cursor-pointer btn-purple">Dashboard</Link>
+          }
         </motion.div>
       </motion.div>
 

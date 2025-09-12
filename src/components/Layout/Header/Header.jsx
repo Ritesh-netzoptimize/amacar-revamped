@@ -1,7 +1,7 @@
 import { useContext, useState } from 'react'
 import './header.css'
 import LoginModal from '@/components/ui/LoginModal'
-import { logout } from '@/redux/slices/userSlice'
+import { logout, setLoginRedirect } from '@/redux/slices/userSlice'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import LogoutModal from '@/components/ui/LogoutModal'
@@ -17,6 +17,7 @@ export default function Header() {
   
     const handleLoginClick = (e) => {
       e.preventDefault();
+      dispatch(setLoginRedirect("/dashboard"));
       setLoginModalOpen(true);
       setOpen(false);
     };

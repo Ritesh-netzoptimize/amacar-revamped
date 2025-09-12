@@ -81,71 +81,58 @@ function App() {
             <Route
               path="/dashboard"
               element={
-                <PrivateRoute>
+                // <PrivateRoute>
                   <DashboardLayout>
                     <Dashboard />
                   </DashboardLayout>
-                </PrivateRoute>
               }
             />
             <Route
               path="/auctions"
               element={
-                <PrivateRoute>
                   <DashboardLayout>
                     <LiveAuctionsPage />
                   </DashboardLayout>
-                </PrivateRoute>
               }
             />
             <Route
               path="/pending-offers"
               element={
-                <PrivateRoute>
                   <DashboardLayout>
                     <PendingOffersPage />
                   </DashboardLayout>
-                </PrivateRoute>
               }
             />
             <Route
               path="/offers"
               element={
-                <PrivateRoute>
                   <DashboardLayout>
                     <PreviousOffersPage />
                   </DashboardLayout>
-                </PrivateRoute>
               }
             />
             <Route
               path="/accepted"
               element={
-                <PrivateRoute>
                   <DashboardLayout>
                     <AcceptedOffersPage />
                   </DashboardLayout>
-                </PrivateRoute>
               }
             />
             <Route
               path="/appointments"
               element={
-                <PrivateRoute>
                   <DashboardLayout>
                     <MyAppointments />
                   </DashboardLayout>
-                </PrivateRoute>
               }
             />
             <Route
               path="/profile"
               element={
-                <PrivateRoute>
                   <DashboardLayout>
                     <ProfilePage />
                   </DashboardLayout>
-                </PrivateRoute>
               }
             />
           </Routes>

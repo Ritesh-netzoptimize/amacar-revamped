@@ -7,7 +7,7 @@ export const loginUser = createAsyncThunk(
   'user/login',
   async (credentials, { rejectWithValue }) => {
     try {
-      const response = await api.post('/login', credentials);
+      const response = await api.post('/auth/login', credentials);
       if (response.data.success) {
         return response.data; // { user, token, expires_in }
       }
@@ -22,7 +22,7 @@ export const registerUser = createAsyncThunk(
   'user/register',
   async (data, { rejectWithValue }) => {
     try {
-      const response = await api.post('/register', data);
+      const response = await api.post('/auth/register', data);
       if (response.data.success) {
         return response.data; // { user, token, expires_in }
       }
@@ -38,7 +38,7 @@ export const forgotPassword = createAsyncThunk(
   async (email, { rejectWithValue }) => {
     try {
         console.log(email)
-      const response = await api.post('/forgot-password', { email });
+      const response = await api.post('/auth/forgot-password', { email });
       if (response.data.success) {
         console.log(response)
         console.log(response.data)
@@ -55,7 +55,7 @@ export const verifyOTP = createAsyncThunk(
   'user/verifyOTP',
   async (data, { rejectWithValue }) => {
     try {
-      const response = await api.post('/verify-otp', data);
+      const response = await api.post('/auth/verify-otp', data);
       if (response.data.success) {
         return response.data.resetToken; // Assuming backend returns resetToken
       }
@@ -70,7 +70,7 @@ export const resetPassword = createAsyncThunk(
   'user/resetPassword',
   async ({ token, newPassword }, { rejectWithValue }) => {
     try {
-      const response = await api.post('/reset-password', { token, newPassword });
+      const response = await api.post('/auth/reset-password', { token, newPassword });
       if (response.data.success) {
         return response.data;
       }
@@ -92,8 +92,17 @@ const userSlice = createSlice({
     },
     error: null,
     status: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
+    loginRedirect: null,
   },
   reducers: {
+
+    setLoginRedirect: (state, action) => {
+        state.loginRedirect = action.payload;
+    },
+    clearLoginRedirect: (state) => {
+        state.loginRedirect = null;
+    },
+
     setFormValue: (state, action) => {
       const { key, value } = action.payload;
       state.form.values[key] = value;
@@ -215,5 +224,5 @@ const userSlice = createSlice({
   },
 });
 
-export const { setFormValue, setFormError, resetForm, logout, loadUser } = userSlice.actions;
+export const { setFormValue, setFormError, resetForm, logout, loadUser, setLoginRedirect, clearLoginRedirect } = userSlice.actions;
 export default userSlice.reducer;

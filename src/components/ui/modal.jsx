@@ -10,6 +10,8 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog"
+import { useDispatch } from "react-redux"
+import { fetchVehicleDetails } from "@/redux/slices/carDetailsAndQuestionsSlice"
 
 export default function Modal({
   isOpen,
@@ -47,27 +49,47 @@ export default function Modal({
     return !newErrors.vin && !newErrors.zip
   }
 
+  const dispatch = useDispatch();
+
+  const handleFetchVehicle = async () => {
+    startProgress();
+  
+    const resultAction = await dispatch(fetchVehicleDetails({
+      vin: import.meta.env.VITE_SAMPLE_VIN,
+      zip: import.meta.env.VITE_SAMPLE_ZIP
+    }));
+  
+    clearInterval(progressInterval); // stop the progress immediately
+
+    if (fetchVehicleDetails.fulfilled.match(resultAction)) {
+      setStepIndex(steps.length); // complete the bar
+      setPhase("success");
+    } else {
+      setPhase("error");
+    }
+  };
+
+  let progressInterval;
+
   function startProgress() {
-    setPhase("loading")
-    setStepIndex(0)
-    let i = 0
-    const interval = setInterval(() => {
-      i += 1
+    setPhase("loading");
+    setStepIndex(0);
+    let i = 0;
+    progressInterval = setInterval(() => {
+      i += 1;
       if (i < steps.length) {
-        setStepIndex(i)
+        setStepIndex(i);
       } else {
-        clearInterval(interval)
-        setTimeout(() => {
-          setPhase("success")
-        }, 450)
+        clearInterval(progressInterval);
       }
-    }, 950)
+    }, 950);
   }
+  
 
   function handleSubmit(e) {
     e?.preventDefault()
     if (validate()) {
-      startProgress()
+      handleFetchVehicle()
     }
   }
 

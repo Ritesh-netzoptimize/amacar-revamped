@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dialog"
 import toast from "react-hot-toast"
 import { useNavigate } from "react-router-dom"
-export default function AuctionSelectionModal({ isOpen, onClose, conditionData }) {
+export default function AuctionSelectionModal({ isOpen, onClose }) {
   const [isAgreed, setIsAgreed] = useState(false)
   const [selectedId, setSelectedId] = useState(null)
   const navigate = useNavigate()
@@ -67,9 +67,7 @@ export default function AuctionSelectionModal({ isOpen, onClose, conditionData }
     toast.success("Redirecting to your selected auction...")
     setTimeout(() => {
       onClose(false)
-      navigate(selected?.route || "/local-auction", {
-        state: { conditionData: conditionData },
-      });
+      navigate(selected?.route || "/local-auction");
     }, 600)
   }
   

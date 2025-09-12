@@ -8,6 +8,10 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog"
+import { registerWithVin } from "@/redux/slices/userSlice"
+import { useDispatch } from "react-redux"
+import { setVehicleDetails } from "@/redux/slices/carDetailsAndQuestionsSlice"
+import { useNavigate } from "react-router-dom"
 
 export default function AuctionModal({
   isOpen,
@@ -34,9 +38,9 @@ export default function AuctionModal({
   })
   const [phase, setPhase] = useState("form") // form | loading | success
   const [isLoading, setIsLoading] = useState(false)
-
+  const navigate = useNavigate();
   const isCloseDisabled = phase === "loading"
-
+  const dispatch = useDispatch();
   function validate() {
     const newErrors = {
       vin: "", firstName: "", lastName: "", email: "", phone: "",
@@ -99,19 +103,63 @@ export default function AuctionModal({
     return Object.values(newErrors).every(error => !error)
   }
 
-  function startAction() {
-    setPhase("loading")
-    setIsLoading(true)
-
-    // Simulate auction submission process
-    setTimeout(() => {
-      setPhase("success")
-      setIsLoading(false)
-    }, 2000)
+  async function startAction() {
+    // First, validate the form
+    if (!validate()) return;
+  
+    // Set loading UI state
+    setPhase("loading");
+    setIsLoading(true);
+  
+    try {
+      // Prepare the form values for API
+      const formValues = {
+        vin,
+        firstName,
+        lastName,
+        email,
+        phone,
+        password,
+        confirmPassword,
+        zip: zipCode,
+        city,
+        state,
+      };
+  
+      // Dispatch registerUser thunk
+      const resultAction = await dispatch(registerWithVin(formValues));
+  
+      if (registerWithVin.fulfilled.match(resultAction)) {
+        // Registration successful, store vehicle data in vehicle slice
+        dispatch(setVehicleDetails(resultAction.payload));
+        navigate('/auction-page')
+        // Update UI to success
+        setPhase("success");
+      } else {
+        // Handle API error
+        console.error('Registration failed:', resultAction.payload);
+        // You can show error in UI if you want
+      }
+    } catch (err) {
+      console.error('Unexpected error:', err);
+    } finally {
+      setIsLoading(false);
+    }
   }
+  
 
   function handleSubmit(e) {
     e?.preventDefault()
+    console.log("firstName: ", firstName)
+    console.log("lastname: ", lastName)
+    console.log("email: ", email)
+    console.log("phone: ", phone)
+    console.log("password: ", password)
+    console.log("confirm password: ", confirmPassword)
+    console.log("vin: ", vin)
+    console.log("zip: ", zipCode)
+    console.log("state: ", state)
+    console.log("city: ", city)
     if (validate()) {
       startAction()
     }
@@ -122,8 +170,27 @@ export default function AuctionModal({
     console.log("Auction submitted successfully")
   }
 
+  const handleOpenChange = (open) => {
+    if (!open) {
+      // Reset state when dialog is closed
+      setPhase("form")
+      setVin("");
+      setZipCode("");
+      setCity("");
+      setConfirmPassword("");
+      setPassword("");
+      setEmail("");
+      setFirstName("");
+      setLastName("");
+      setPhone("");
+      setState("");
+      setErrors({});
+      onClose(false);
+    }
+  };
+
   return (
-    <Dialog open={isOpen} onOpenChange={isCloseDisabled ? undefined : onClose}>
+    <Dialog open={isOpen} onOpenChange={isCloseDisabled ? undefined : handleOpenChange}>
       <DialogContent
         className="lg:mt-[1rem] mt-[2rem] sm:max-w-3xl rounded-xl shadow-xl p-0 overflow-hidden bg-white max-h-[90vh] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
         showCloseButton={!isCloseDisabled}
@@ -211,6 +278,36 @@ export default function AuctionModal({
                       )}
                     </div>
 
+
+                      {/* Email Field */}
+                      <div className="grid gap-1">
+                      <label htmlFor="email" className="text-sm font-medium text-slate-800">
+                        Email Address *
+                      </label>
+                      <div className="relative">
+                        <div className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                          <Mail className="h-4 w-4" />
+                        </div>
+                        <input
+                          id="email"
+                          type="email"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          placeholder="Enter your email address"
+                          className="h-11 w-full rounded-md border border-slate-200 px-9 py-2 text-sm outline-none ring-0 transition-shadow focus:shadow-[0_0_0_3px_rgba(249,115,22,0.5)]"
+                        />
+                      </div>
+                      {errors.email && (
+                        <motion.p 
+                          initial={{ opacity: 0, y: -4 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="text-xs text-red-500 mt-1"
+                        >
+                          {errors.email}
+                        </motion.p>
+                      )}
+                    </div>
+
                     {/* Password Field */}
                     <div className="grid gap-1">
                       <label htmlFor="password" className="text-sm font-medium text-slate-800">
@@ -247,37 +344,6 @@ export default function AuctionModal({
                           className="text-xs text-red-500 mt-1"
                         >
                           {errors.password}
-                        </motion.p>
-                      )}
-                    </div>
-
-                   
-
-                    {/* Email Field */}
-                    <div className="grid gap-1">
-                      <label htmlFor="email" className="text-sm font-medium text-slate-800">
-                        Email Address *
-                      </label>
-                      <div className="relative">
-                        <div className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
-                          <Mail className="h-4 w-4" />
-                        </div>
-                        <input
-                          id="email"
-                          type="email"
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                          placeholder="Enter your email address"
-                          className="h-11 w-full rounded-md border border-slate-200 px-9 py-2 text-sm outline-none ring-0 transition-shadow focus:shadow-[0_0_0_3px_rgba(249,115,22,0.5)]"
-                        />
-                      </div>
-                      {errors.email && (
-                        <motion.p 
-                          initial={{ opacity: 0, y: -4 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          className="text-xs text-red-500 mt-1"
-                        >
-                          {errors.email}
                         </motion.p>
                       )}
                     </div>
@@ -368,6 +434,37 @@ export default function AuctionModal({
 
                     
 
+
+                    {/* Phone Number Field */}
+                    <div className="grid gap-1">
+                      <label htmlFor="phone" className="text-sm font-medium text-slate-800">
+                        Phone Number *
+                      </label>
+                      <div className="relative">
+                        <div className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                          <MapPin className="h-4 w-4" />
+                        </div>
+                        <input
+                          id="phone"
+                          type="tel"
+                          value={phone}
+                          onChange={(e) => setPhone(e.target.value)}
+                          placeholder="Enter your phone number"
+                          className="h-11 w-full rounded-md border border-slate-200 px-9 py-2 text-sm outline-none ring-0 transition-shadow focus:shadow-[0_0_0_3px_rgba(249,115,22,0.5)]"
+                        />
+                      </div>
+                      {errors.phone && (
+                        <motion.p 
+                          initial={{ opacity: 0, y: -4 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="text-xs text-red-500 mt-1"
+                        >
+                          {errors.phone}
+                        </motion.p>
+                      )}
+                    </div>
+
+                   
                     {/* Confirm Password Field */}
                     <div className="grid gap-1">
                       <label htmlFor="confirmPassword" className="text-sm font-medium text-slate-800">
@@ -407,37 +504,6 @@ export default function AuctionModal({
                         </motion.p>
                       )}
                     </div>
-
-                    {/* Phone Number Field */}
-                    <div className="grid gap-1">
-                      <label htmlFor="phone" className="text-sm font-medium text-slate-800">
-                        Phone Number *
-                      </label>
-                      <div className="relative">
-                        <div className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
-                          <MapPin className="h-4 w-4" />
-                        </div>
-                        <input
-                          id="phone"
-                          type="tel"
-                          value={phone}
-                          onChange={(e) => setPhone(e.target.value)}
-                          placeholder="Enter your phone number"
-                          className="h-11 w-full rounded-md border border-slate-200 px-9 py-2 text-sm outline-none ring-0 transition-shadow focus:shadow-[0_0_0_3px_rgba(249,115,22,0.5)]"
-                        />
-                      </div>
-                      {errors.phone && (
-                        <motion.p 
-                          initial={{ opacity: 0, y: -4 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          className="text-xs text-red-500 mt-1"
-                        >
-                          {errors.phone}
-                        </motion.p>
-                      )}
-                    </div>
-
-                   
 
                     {/* State Field */}
                     <div className="grid gap-1">

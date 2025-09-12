@@ -1,17 +1,16 @@
-import React, { useMemo, useState } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import { Loader2, CheckCircle2, Car, ShieldCheck, FileSearch, LineChart, Hash, MapPin, Circle, Sparkles } from "lucide-react"
-import { useNavigate } from "react-router-dom"
+import React, { useMemo, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Loader2, CheckCircle2, Car, ShieldCheck, FileSearch, LineChart, Hash, MapPin, Circle, Sparkles, X } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog"
-import { useDispatch } from "react-redux"
-import { fetchVehicleDetails } from "@/redux/slices/carDetailsAndQuestionsSlice"
+} from "@/components/ui/dialog";
+import { useDispatch } from "react-redux";
+import { fetchVehicleDetails, setZipState } from "@/redux/slices/carDetailsAndQuestionsSlice";
 
 export default function Modal({
   isOpen,
@@ -19,46 +18,62 @@ export default function Modal({
   title = "Get your instant offer",
   description = "Enter your car details to start the auction",
 }) {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   // UI state
-  const [vin, setVin] = useState("")
-  const [zip, setZip] = useState("")
-  const [errors, setErrors] = useState({ vin: "", zip: "" })
-  const [phase, setPhase] = useState("form") // form | loading | success
-  const [stepIndex, setStepIndex] = useState(0)
+  const [vin, setVin] = useState("");
+  const [zip, setZip] = useState("");
+  const [errors, setErrors] = useState({ vin: "", zip: "" });
+  const [phase, setPhase] = useState("form"); // form | loading | success | error
+  const [stepIndex, setStepIndex] = useState(0);
 
-  const steps = useMemo(() => ([
-    { label: "Analyzing Your Vehicle", Icon: Car },
-    { label: "Validating VIN Number", Icon: ShieldCheck },
-    { label: "Fetching Vehicle Specifications", Icon: FileSearch },
-    { label: "Analyzing Market Data", Icon: LineChart },
-  ]), [])
+  const steps = useMemo(
+    () => [
+      { label: "Analyzing Your Vehicle", Icon: Car },
+      { label: "Validating VIN Number", Icon: ShieldCheck },
+      { label: "Fetching Vehicle Specifications", Icon: FileSearch },
+      { label: "Analyzing Market Data", Icon: LineChart },
+    ],
+    []
+  );
 
-  const isCloseDisabled = phase === "loading"
+  const isCloseDisabled = phase === "loading";
+
+  // Handle dialog open/close
+  const handleOpenChange = (open) => {
+    if (!open) {
+      // Reset state when dialog is closed
+      setPhase("form");
+      setVin("");
+      setZip("");
+      setErrors({ vin: "", zip: "" });
+      setStepIndex(0);
+      onClose(false);
+    }
+  };
 
   function validate() {
-    const newErrors = { vin: "", zip: "" }
+    const newErrors = { vin: "", zip: "" };
     if (!/^[A-HJ-NPR-Z0-9]{17}$/i.test(vin)) {
-      newErrors.vin = "Enter a valid 17‑character VIN (letters & numbers)"
+      newErrors.vin = "Enter a valid 17‑character VIN (letters & numbers)";
     }
     if (!/^\d{5}$/.test(zip)) {
-      newErrors.zip = "Enter a valid 5‑digit ZIP code"
+      newErrors.zip = "Enter a valid 5‑digit ZIP code";
     }
-    setErrors(newErrors)
-    return !newErrors.vin && !newErrors.zip
+    setErrors(newErrors);
+    return !newErrors.vin && !newErrors.zip;
   }
 
   const dispatch = useDispatch();
 
   const handleFetchVehicle = async () => {
     startProgress();
-  
-    const resultAction = await dispatch(fetchVehicleDetails({
-      vin: import.meta.env.VITE_SAMPLE_VIN,
-      zip: import.meta.env.VITE_SAMPLE_ZIP
-    }));
-  
+
+    const resultAction = await dispatch(
+      fetchVehicleDetails({vin, zip})
+    );
+    dispatch(setZipState(zip))
+
     clearInterval(progressInterval); // stop the progress immediately
 
     if (fetchVehicleDetails.fulfilled.match(resultAction)) {
@@ -84,22 +99,21 @@ export default function Modal({
       }
     }, 950);
   }
-  
 
   function handleSubmit(e) {
-    e?.preventDefault()
+    e?.preventDefault();
     if (validate()) {
-      handleFetchVehicle()
+      handleFetchVehicle();
     }
   }
 
   function handleSuccessCTA() {
-    onClose(false)
-    navigate("/auction-page")
+    onClose(false);
+    navigate("/auction-page");
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={isCloseDisabled ? undefined : onClose}>
+    <Dialog open={isOpen} onOpenChange={isCloseDisabled ? undefined : handleOpenChange}>
       <DialogContent
         className="sm:max-w-md rounded-2xl shadow-xl p-0 overflow-hidden bg-white"
         showCloseButton={!isCloseDisabled}
@@ -199,7 +213,7 @@ export default function Modal({
                       className="h-1 bg-slate-800"
                       initial={{ width: "0%" }}
                       animate={{ width: `${((stepIndex + 1) / steps.length) * 100}%` }}
-                      transition={{ ease: 'easeOut', duration: 0.4 }}
+                      transition={{ ease: "easeOut", duration: 0.4 }}
                     />
                   </div>
                 </div>
@@ -219,8 +233,8 @@ export default function Modal({
                       ) : (
                         <Circle className="h-4 w-4 text-slate-300" />
                       )}
-                      <Icon className={`h-4 w-4 ${idx <= stepIndex ? 'text-slate-800' : 'text-slate-400'}`} />
-                      <span className={`${idx <= stepIndex ? 'text-slate-800' : 'text-slate-500'}`}>{label}</span>
+                      <Icon className={`h-4 w-4 ${idx <= stepIndex ? "text-slate-800" : "text-slate-400"}`} />
+                      <span className={`${idx <= stepIndex ? "text-slate-800" : "text-slate-500"}`}>{label}</span>
                     </motion.div>
                   ))}
                 </div>
@@ -236,7 +250,7 @@ export default function Modal({
                 transition={{ type: "spring", stiffness: 260, damping: 20 }}
                 className="grid gap-5 place-items-center text-center"
               >
-                <motion.div className="relative" initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: 'spring', stiffness: 340, damping: 18 }}>
+                <motion.div className="relative" initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: "spring", stiffness: 340, damping: 18 }}>
                   <div className="grid place-items-center rounded-2xl border border-green-200 bg-gradient-to-b from-white to-emerald-50 p-4 shadow-sm">
                     <CheckCircle2 className="h-14 w-14 text-green-500" />
                   </div>
@@ -254,9 +268,28 @@ export default function Modal({
                 </button>
               </motion.div>
             )}
+            {phase === "error" && (
+              <motion.div
+                key="error"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.98 }}
+                transition={{ type: "spring", stiffness: 260, damping: 20 }}
+                className="grid gap-5 place-items-center text-center"
+              >
+                <motion.div className="relative" initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: "spring", stiffness: 340, damping: 18 }}>
+                  <div className="grid place-items-center rounded-2xl border border-red-200 bg-gradient-to-b from-white to-emerald-50 p-4 shadow-sm">
+                    <X className="h-14 w-14 text-red-500" />
+                  </div>
+                </motion.div>
+                <div className="space-y-1">
+                  <h3 className="text-lg font-semibold text-slate-900">Can't fetch vehicle data!</h3>
+                </div>
+              </motion.div>
+            )}
           </AnimatePresence>
         </div>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

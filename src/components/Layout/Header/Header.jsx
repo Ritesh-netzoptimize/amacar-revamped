@@ -5,6 +5,7 @@ import { logout, setLoginRedirect } from '@/redux/slices/userSlice'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import LogoutModal from '@/components/ui/LogoutModal'
+import { persistor } from '@/redux/store'
 // import { AuthContext } from '@/contexts/AuthContext'
 
 export default function Header() {
@@ -28,8 +29,9 @@ export default function Header() {
     };
   
     const handleConfirmLogout = async () => {
-      await dispatch(logout());
-      navigate('/');
+        // await persistor.purge();
+        await dispatch(logout());   
+        navigate('/');
     };
   
     const handleForgotPassword = () => {

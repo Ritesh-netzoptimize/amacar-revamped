@@ -8,8 +8,14 @@ import TestimonialCarousel from '@/components/Home/TestimonialCarousel/Testimoni
 import CarFooterSection from '@/components/Home/CarFooterSection/CarFooterSection.jsx'
 import VideoSection from '@/components/Home/VideoSection/videoSection.jsx'
 import HeroCarousel from '@/components/Home/Carousel/Carousel.jsx'
+import { useSelector } from 'react-redux'
+import { useEffect } from 'react'
 
 export default function HomePage() {
+  const { userState, loading } = useSelector((state) => state.user);
+    useEffect(() => {
+        console.log(userState);
+    })
     return (
         <>
             <Hero />

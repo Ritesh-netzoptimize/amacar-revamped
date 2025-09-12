@@ -19,6 +19,7 @@ import {
 import Modal from '@/components/ui/modal';
 import { useDispatch } from 'react-redux';
 import { logout } from '@/redux/slices/userSlice';
+import { persistor } from '@/redux/store';
 // import { AuthContext } from '@/contexts/AuthContext';
 
 const Sidebar = ({ isCollapsed, onToggle }) => {
@@ -47,8 +48,9 @@ const Sidebar = ({ isCollapsed, onToggle }) => {
     { 
       name: 'Logout', 
       icon: LogOut, 
-      action: () => {
+      action: async () => {
         // logout(); // Call the logout function from AuthContext
+        // await persistor.purge();
         dispatch(logout());
         navigate('/');
       },

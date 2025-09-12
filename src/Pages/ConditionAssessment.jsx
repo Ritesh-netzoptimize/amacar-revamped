@@ -4,119 +4,46 @@ import { CheckCircle2, Circle, ChevronLeft, ChevronRight, User, Mail, Phone, Map
 import AuctionSelectionModal from "@/components/ui/auction-selection-modal";
 import { useDispatch, useSelector } from "react-redux";
 import LoginModal from "@/components/ui/LoginModal";
-import { setLoginRedirect } from "@/redux/slices/userSlice";
+import { setLoginRedirect } from "@/redux/slices/userSlice"; // Adjust import path
+import { updateQuestion, resetQuestions } from "@/redux/slices/carDetailsAndQuestionsSlice"; // Adjust import path
 
 export default function ConditionAssessment() {
-  const sections = useMemo(
-    () => [
-      {
-        questions: [
-          {
-            key: "cosmetic",
-            label: "Cosmetic condition?",
-            emoji: "🎨",
-            options: ["Excellent", "Good", "Fair", "Poor"],
-            positive: ["Excellent", "Good"],
-            needsDetails: ["Fair", "Poor"],
-          },
-          {
-            key: "smoked",
-            label: "Smoked in?",
-            emoji: "🚭",
-            options: ["No", "Yes"],
-            positive: ["No"],
-            needsDetails: ["Yes"],
-          },
-        ],
-      },
-      {
-        questions: [
-          {
-            key: "title",
-            label: "Title status?",
-            emoji: "📜",
-            options: ["Clean", "Salvage", "Rebuilt"],
-            positive: ["Clean"],
-            needsDetails: ["Salvage", "Rebuilt"],
-          },
-          {
-            key: "accident",
-            label: "Accident history?",
-            emoji: "🚧",
-            options: ["None", "Minor", "Major"],
-            positive: ["None"],
-            needsDetails: ["Minor", "Major"],
-          },
-        ],
-      },
-      {
-        questions: [
-          {
-            key: "features",
-            label: "Notable features?",
-            emoji: "⭐",
-            options: ["Navigation", "Leather", "Sunroof", "Alloy Wheels", "Premium Audio", "Safety+"],
-            positive: [],
-            needsDetails: [],
-            isMultiSelect: true,
-          },
-          {
-            key: "modifications",
-            label: "Modifications?",
-            emoji: "🛠️",
-            options: ["No", "Yes"],
-            positive: ["No"],
-            needsDetails: ["Yes"],
-          },
-        ],
-      },
-      {
-        questions: [
-          {
-            key: "warning",
-            label: "Warning lights?",
-            emoji: "⚠️",
-            options: ["No", "Yes"],
-            positive: ["No"],
-            needsDetails: ["Yes"],
-          },
-          {
-            key: "tread",
-            label: "Tread condition?",
-            emoji: "🛞",
-            options: ["New", "Good", "Fair", "Replace"],
-            positive: ["New", "Good"],
-            needsDetails: ["Fair", "Replace"],
-          },
-        ],
-      },
-    ],
-    []
-  );
+  const dispatch = useDispatch();
+  const { questions, vehicleDetails, stateZip } = useSelector((state) => state.carDetailsAndQuestions);
+  const userState = useSelector((state) => state.user.user);
 
-  const [answers, setAnswers] = useState(() => {
-    const initial = {};
-    sections.forEach((section) =>
-      section.questions.forEach((q) => {
-        if (q.positive.length > 0) {
-          initial[q.key] = q.positive[0];
-        } else if (q.isMultiSelect) {
-          initial[q.key] = [];
-        }
-      })
-    );
-    return initial;
-  });
+  // Initialize questions if invalid
 
-  const [confirmedAnswers, setConfirmedAnswers] = useState({});
-  const [details, setDetails] = useState({});
+  useEffect(() => {
+    console.log(userState);
+  })
+
+  useEffect(() => {
+    if (!questions || questions.length !== 8) {
+      console.warn("Resetting questions due to invalid state");
+      dispatch(resetQuestions());
+    }
+  }, [dispatch, questions]);
+
+  // Group questions into sections for rendering
+  const sections = useMemo(() => {
+    if (!questions || questions.length < 8) {
+      console.error("Questions array is incomplete:", questions);
+      return [];
+    }
+    return [
+      { questions: questions.slice(0, 2) }, // Cosmetic, Smoked
+      { questions: questions.slice(2, 4) }, // Title, Accident
+      { questions: questions.slice(4, 6) }, // Features, Modifications
+      { questions: questions.slice(6, 8) }, // Warning, Tread
+    ];
+  }, [questions]);
+
   const [currentSection, setCurrentSection] = useState(0);
   const [showValidation, setShowValidation] = useState(false);
   const [showAuctionModal, setShowAuctionModal] = useState(false);
   const [loginModalOpen, setLoginModalOpen] = useState(false);
   const [showUserForm, setShowUserForm] = useState(false);
-  const dispatch = useDispatch();
-  const [finalData, setFinalData] = useState([]);
   const [user, setUser] = useState({
     fullName: "",
     email: "",
@@ -127,7 +54,7 @@ export default function ConditionAssessment() {
   });
   const [userErrors, setUserErrors] = useState({});
 
-  const { userExists } = useSelector(state => state.user);
+  const userExists = useSelector((state) => state?.user?.user);
 
   const formVariants = {
     hidden: { opacity: 0, y: 16 },
@@ -136,10 +63,9 @@ export default function ConditionAssessment() {
   };
 
   const totalSections = sections.length;
-  const answeredQuestions = Object.keys(confirmedAnswers).length;
-  const totalQuestions = sections.reduce((sum, section) => sum + section.questions.length, 0);
-
-  const currentQuestions = sections[currentSection].questions;
+  const answeredQuestions = questions ? questions.filter((q) => q.answer || (q.isMultiSelect && Array.isArray(q.answer) && q.answer.length > 0)).length : 0;
+  const totalQuestions = questions ? questions.length : 0;
+  const currentQuestions = sections[currentSection]?.questions || [];
 
   useEffect(() => {
     if (showValidation) {
@@ -157,14 +83,12 @@ export default function ConditionAssessment() {
   };
 
   function getFinalSubmissionData() {
-    return sections.flatMap((section) =>
-      section.questions.map((q) => ({
-        key: q.key,
-        label: q.label,
-        answer: confirmedAnswers[q.key] || answers[q.key] || null,
-        details: details[q.key] || null,
-      }))
-    );
+    return questions ? questions.map((q) => ({
+      key: q.key,
+      label: q.label,
+      answer: q.answer || null,
+      details: q.details || null,
+    })) : [];
   }
 
   const handleForgotPassword = () => {
@@ -176,45 +100,34 @@ export default function ConditionAssessment() {
   };
 
   function selectAnswer(key, value, isMultiSelect = false) {
+    let newAnswer;
     if (isMultiSelect) {
-      setAnswers((prev) => {
-        const current = prev[key] || [];
-        const newValue = current.includes(value)
-          ? current.filter((v) => v !== value)
-          : [...current, value];
-        return { ...prev, [key]: newValue };
-      });
-      setConfirmedAnswers((prev) => ({ ...prev, [key]: answers[key] || [] }));
+      const currentAnswer = questions.find((q) => q.key === key)?.answer || [];
+      newAnswer = Array.isArray(currentAnswer)
+        ? currentAnswer.includes(value)
+          ? currentAnswer.filter((v) => v !== value)
+          : [...currentAnswer, value]
+        : [value];
     } else {
-      setAnswers((prev) => ({ ...prev, [key]: value }));
-      const question = currentQuestions.find((q) => q.key === key);
-      if (!question.positive.includes(value) || confirmedAnswers[key]) {
-        setConfirmedAnswers((prev) => ({ ...prev, [key]: value }));
-      }
-      if (!question.needsDetails.includes(value)) {
-        setDetails((prev) => {
-          const newDetails = { ...prev };
-          delete newDetails[key];
-          return newDetails;
-        });
-      }
+      newAnswer = value;
     }
+
+    dispatch(updateQuestion({ key, answer: newAnswer }));
     setShowValidation(false);
   }
 
   function setQuestionDetails(key, value) {
-    setDetails((prev) => ({ ...prev, [key]: value }));
+    dispatch(updateQuestion({ key, details: value }));
   }
 
   function nextSection() {
-    const unanswered = currentQuestions.some((q) => !answers[q.key] || (q.isMultiSelect && answers[q.key].length === 0));
+    const unanswered = currentQuestions.some(
+      (q) => !q.answer || (q.isMultiSelect && (!Array.isArray(q.answer) || q.answer.length === 0))
+    );
     if (unanswered) {
       setShowValidation(true);
       return;
     }
-    currentQuestions.forEach((q) => {
-      setConfirmedAnswers((prev) => ({ ...prev, [q.key]: answers[q.key] }));
-    });
     if (currentSection < totalSections - 1) {
       setCurrentSection(currentSection + 1);
       setShowValidation(false);
@@ -229,23 +142,26 @@ export default function ConditionAssessment() {
   }
 
   function handleContinue() {
-    const unanswered = currentQuestions.some((q) => !answers[q.key] || (q.isMultiSelect && answers[q.key].length === 0));
+    const unanswered = currentQuestions.some(
+      (q) => !q.answer || (q.isMultiSelect && (!Array.isArray(q.answer) || q.answer.length === 0))
+    );
     if (unanswered) {
       setShowValidation(true);
       return;
     }
-    currentQuestions.forEach((q) => {
-      setConfirmedAnswers((prev) => ({ ...prev, [q.key]: answers[q.key] }));
-    });
     setShowValidation(false);
     setShowUserForm(true);
   }
 
   function renderQuestion(question, questionIndex) {
-    const selected = answers[question.key];
+    console.log(question)
+    const selected = question.answer;
+    console.log(question.answer)
+    
+    // Fixed: Added defensive checks for needsDetails
     const needsDetails = question.isMultiSelect
-      ? question.needsDetails.length > 0 && selected?.length > 0
-      : selected && question.needsDetails.includes(selected);
+      ? (question.needsDetails && Array.isArray(question.needsDetails) && question.needsDetails.length > 0 && Array.isArray(selected) && selected.length > 0)
+      : selected && question.needsDetails && Array.isArray(question.needsDetails) && question.needsDetails.includes(selected);
 
     return (
       <motion.div
@@ -257,15 +173,15 @@ export default function ConditionAssessment() {
       >
         <div className="mb-4">
           <h3 className="text-lg md:text-xl font-semibold text-slate-900 mb-2">
-            <span className="mr-2">{question.emoji}</span>
+            <span className="mr-2">{question.emoji || '❓'}</span>
             {question.label}
           </h3>
         </div>
 
         <div className={`grid ${question.isMultiSelect ? "grid-cols-1 gap-2" : "grid-cols-2 gap-3 md:grid-cols-3"} mb-4`}>
-          {question.options.map((opt) => {
+          {(question.options || []).map((opt) => {
             const isSelected = question.isMultiSelect
-              ? selected?.includes(opt)
+              ? Array.isArray(selected) && selected.includes(opt)
               : selected === opt;
             return (
               <button
@@ -301,7 +217,7 @@ export default function ConditionAssessment() {
               Additional details:
             </label>
             <textarea
-              value={details[question.key] || ""}
+              value={question.details || ""}
               onChange={(e) => setQuestionDetails(question.key, e.target.value)}
               placeholder="Describe specific details..."
               className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#f6851f]/20 focus:border-[#f6851f] resize-none"
@@ -310,6 +226,19 @@ export default function ConditionAssessment() {
           </motion.div>
         )}
       </motion.div>
+    );
+  }
+
+  // Show loading or error if questions are not ready
+  if (!questions || questions.length === 0) {
+    return (
+      <div className="relative min-h-screen w-full overflow-hidden bg-gradient-to-b from-slate-50 to-slate-100 pt-20 md:pt-24">
+        <div className="mx-auto max-w-6xl px-6 py-8 md:py-12 text-center">
+          <h1 className="mb-6 text-center text-3xl md:text-4xl font-bold text-slate-900">
+            Loading Assessment...
+          </h1>
+        </div>
+      </div>
     );
   }
 
@@ -396,85 +325,183 @@ export default function ConditionAssessment() {
               <motion.div initial="hidden" animate="visible" exit="exit" variants={formVariants} className="rounded-2xl border border-white/60 bg-white/70 p-6 shadow-xl backdrop-blur-xl">
                 <div className="mb-6">
                   <h2 className="text-xl font-semibold text-slate-900">Your Details</h2>
-                  <p className="text-sm text-slate-600">Provide contact and address information to proceed.</p>
+                  <p className="text-sm text-slate-600">
+                    {userState?.display_name ? "Verify your information below." : "Provide contact and address information to proceed."}
+                  </p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="grid gap-2">
-                    <label className="text-sm font-medium text-slate-800">Full Name</label>
+                    <label className="text-sm font-medium text-slate-800 flex items-center gap-2">
+                      Full Name
+                    </label>
                     <div className="relative">
-                      <User className="h-4 w-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                      <User className={`h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 ${
+                        userState?.display_name ? "text-orange-500" : "text-slate-400"
+                      }`} />
                       <input
-                        value={user.fullName}
+                        value={user.fullName || userState?.display_name || ""}
                         onChange={(e) => setUser({ ...user, fullName: e.target.value })}
                         placeholder="Enter full name"
-                        className={`h-11 w-full rounded-xl border bg-white pl-9 pr-3 text-sm outline-none transition-shadow ${userErrors.fullName ? "border-red-300" : "border-slate-200 focus:shadow-[0_0_0_4px_rgba(246,133,31,0.18)]"}`}
+                        disabled={!!userState?.display_name}
+                        className={`h-11 w-full rounded-xl border bg-white pl-9 pr-3 text-sm outline-none transition-shadow ${
+                          userState?.display_name 
+                            ? "bg-green-50 border-orange-200 text-orange-800 cursor-not-allowed" 
+                            : userErrors.fullName 
+                              ? "border-red-300" 
+                              : "border-slate-200 focus:shadow-[0_0_0_4px_rgba(246,133,31,0.18)]"
+                        }`}
                       />
+                      {userState?.display_name && (
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                          <div className="h-2 w-2 bg-orange-500 rounded-full"></div>
+                        </div>
+                      )}
                     </div>
                   </div>
 
                   <div className="grid gap-2">
-                    <label className="text-sm font-medium text-slate-800">Email Address</label>
+                    <label className="text-sm font-medium text-slate-800 flex items-center gap-2">
+                      Email Address
+                    </label>
                     <div className="relative">
-                      <Mail className="h-4 w-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                      <Mail className={`h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 ${
+                        userState?.email ? "text-orange-500" : "text-slate-400"
+                      }`} />
                       <input
-                        value={user.email}
+                        value={user.email || userState?.email || ""}
                         onChange={(e) => setUser({ ...user, email: e.target.value })}
                         placeholder="name@example.com"
-                        className={`h-11 w-full rounded-xl border bg-white pl-9 pr-3 text-sm outline-none transition-shadow ${userErrors.email ? "border-red-300" : "border-slate-200 focus:shadow-[0_0_0_4px_rgba(246,133,31,0.18)]"}`}
+                        disabled={!!userState?.email}
+                        className={`h-11 w-full rounded-xl border bg-white pl-9 pr-3 text-sm outline-none transition-shadow ${
+                          userState?.email 
+                            ? "bg-orange-50 border-orange-200 text-orange-800 cursor-not-allowed" 
+                            : userErrors.email 
+                              ? "border-red-300" 
+                              : "border-slate-200 focus:shadow-[0_0_0_4px_rgba(246,133,31,0.18)]"
+                        }`}
                       />
+                      {userState?.email && (
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                          <div className="h-2 w-2 bg-orange-500 rounded-full"></div>
+                        </div>
+                      )}
                     </div>
                   </div>
 
                   <div className="grid gap-2">
-                    <label className="text-sm font-medium text-slate-800">Phone Number</label>
+                    <label className="text-sm font-medium text-slate-800 flex items-center gap-2">
+                      Phone Number
+                    </label>
                     <div className="relative">
-                      <Phone className="h-4 w-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                      <Phone className={`h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 ${
+                        userState?.meta?.phone ? "text-green-500" : "text-slate-400"
+                      }`} />
                       <input
-                        value={user.phone}
+                        value={user.phone || userState?.meta?.phone || ""}
                         onChange={(e) => setUser({ ...user, phone: e.target.value.replace(/[^0-9+\-\s]/g, "") })}
                         placeholder="+1 555 123 4567"
-                        className={`h-11 w-full rounded-xl border bg-white pl-9 pr-3 text-sm outline-none transition-shadow ${userErrors.phone ? "border-red-300" : "border-slate-200 focus:shadow-[0_0_0_4px_rgba(246,133,31,0.18)]"}`}
+                        disabled={!!userState?.meta?.phone}
+                        className={`h-11 w-full rounded-xl border bg-white pl-9 pr-3 text-sm outline-none transition-shadow ${
+                          userState?.meta?.phone 
+                            ? "bg-green-50 border-green-200 text-green-800 cursor-not-allowed" 
+                            : userErrors.phone 
+                              ? "border-red-300" 
+                              : "border-slate-200 focus:shadow-[0_0_0_4px_rgba(246,133,31,0.18)]"
+                        }`}
                       />
+                      {userState?.meta?.phone && (
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                          <div className="h-2 w-2 bg-green-500 rounded-full"></div>
+                        </div>
+                      )}
                     </div>
                   </div>
 
                   <div className="grid gap-2">
-                    <label className="text-sm font-medium text-slate-800">Zipcode</label>
+                    <label className="text-sm font-medium text-slate-800 flex items-center gap-2">
+                      Zipcode
+                    </label>
                     <div className="relative">
-                      <MapPin className="h-4 w-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                      <MapPin className={`h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 ${
+                        userState?.zipcode ? "text-green-500" : "text-slate-400"
+                      }`} />
                       <input
-                        value={user.zipcode}
+                        value={user.zipcode || stateZip || ""}
                         onChange={(e) => setUser({ ...user, zipcode: e.target.value.replace(/[^0-9]/g, "").slice(0, 10) })}
                         placeholder="94016"
-                        className={`h-11 w-full rounded-xl border bg-white pl-9 pr-3 text-sm outline-none transition-shadow ${userErrors.zipcode ? "border-red-300" : "border-slate-200 focus:shadow-[0_0_0_4px_rgba(246,133,31,0.18)]"}`}
+                        disabled={!!stateZip}
+                        className={`h-11 w-full rounded-xl border bg-white pl-9 pr-3 text-sm outline-none transition-shadow ${
+                          stateZip
+                            ? "bg-orange-50 border-orange-200 text-orange-800 cursor-not-allowed" 
+                            : userErrors.zipcode 
+                              ? "border-red-300" 
+                              : "border-slate-200 focus:shadow-[0_0_0_4px_rgba(246,133,31,0.18)]"
+                        }`}
                       />
+                      {stateZip && (
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                          <div className="h-2 w-2 bg-orange-500 rounded-full"></div>
+                        </div>
+                      )}
                     </div>
                   </div>
 
                   <div className="grid gap-2">
-                    <label className="text-sm font-medium text-slate-800">State</label>
+                    <label className="text-sm font-medium text-slate-800 flex items-center gap-2">
+                      State
+                    </label>
                     <div className="relative">
-                      <Landmark className="h-4 w-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                      <Landmark className={`h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 ${
+                        userState?.meta?.state ? "text-green-500" : "text-slate-400"
+                      }`} />
                       <input
-                        value={user.state}
+                        value={user.state || userState?.meta?.state || ""}
                         onChange={(e) => setUser({ ...user, state: e.target.value })}
                         placeholder="State"
-                        className={`h-11 w-full rounded-xl border bg-white pl-9 pr-3 text-sm outline-none transition-shadow ${userErrors.state ? "border-red-300" : "border-slate-200 focus:shadow-[0_0_0_4px_rgba(246,133,31,0.18)]"}`}
+                        disabled={!!userState?.meta?.state}
+                        className={`h-11 w-full rounded-xl border bg-white pl-9 pr-3 text-sm outline-none transition-shadow ${
+                          userState?.meta?.state 
+                            ? "bg-green-50 border-green-200 text-green-800 cursor-not-allowed" 
+                            : userErrors.state 
+                              ? "border-red-300" 
+                              : "border-slate-200 focus:shadow-[0_0_0_4px_rgba(246,133,31,0.18)]"
+                        }`}
                       />
+                      {userState?.meta?.state && (
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                          <div className="h-2 w-2 bg-green-500 rounded-full"></div>
+                        </div>
+                      )}
                     </div>
                   </div>
 
                   <div className="grid gap-2">
-                    <label className="text-sm font-medium text-slate-800">City</label>
+                    <label className="text-sm font-medium text-slate-800 flex items-center gap-2">
+                      City
+                    </label>
                     <div className="relative">
-                      <Building className="h-4 w-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                      <Building className={`h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 ${
+                        userState?.meta?.city ? "text-green-500" : "text-slate-400"
+                      }`} />
                       <input
-                        value={user.city}
+                        value={user.city || userState?.meta?.city || ""}
                         onChange={(e) => setUser({ ...user, city: e.target.value })}
                         placeholder="City"
-                        className={`h-11 w-full rounded-xl border bg-white pl-9 pr-3 text-sm outline-none transition-shadow ${userErrors.city ? "border-red-300" : "border-slate-200 focus:shadow-[0_0_0_4px_rgba(246,133,31,0.18)]"}`}
+                        disabled={!!userState?.meta?.city}
+                        className={`h-11 w-full rounded-xl border bg-white pl-9 pr-3 text-sm outline-none transition-shadow ${
+                          userState?.meta?.city 
+                            ? "bg-green-50 border-green-200 text-green-800 cursor-not-allowed" 
+                            : userErrors.city 
+                              ? "border-red-300" 
+                              : "border-slate-200 focus:shadow-[0_0_0_4px_rgba(246,133,31,0.18)]"
+                        }`}
                       />
+                      {userState?.meta?.city && (
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                          <div className="h-2 w-2 bg-green-500 rounded-full"></div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -487,50 +514,45 @@ export default function ConditionAssessment() {
                     <ChevronLeft className="h-4 w-4" /> Back
                   </button>
 
-                  {/* {
-                    userExists ?
+                  {userExists ? (
                     <button
-                    onClick={() => {
-                      const errs = {};
-                      if (!user.fullName) errs.fullName = true;
-                      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(user.email)) errs.email = true;
-                      if (!user.phone || user.phone.replace(/\D/g, "").length < 7) errs.phone = true;
-                      if (!user.zipcode) errs.zipcode = true;
-                      if (!user.state) errs.state = true;
-                      if (!user.city) errs.city = true;
-                      setUserErrors(errs);
-                      if (Object.keys(errs).length === 0) {
-                        setShowAuctionModal(true);
-                      }
-                    }}
-                    className="cursor-pointer inline-flex h-11 items-center justify-center rounded-xl bg-gradient-to-r from-[#f6851f] to-[#e63946] px-6 text-sm font-semibold text-white shadow-lg shadow-orange-500/25 transition hover:scale-[1.01]"
-                  >
-                    Submit
-                  </button> :
-                    <a className="btn-login" href="#" onClick={handleLoginClick}>
-                    Login to continue
-                  </a> 
-                  } */}
-                  <button
-                    onClick={() => {
-                      const errs = {};
-                      if (!user.fullName) errs.fullName = true;
-                      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(user.email)) errs.email = true;
-                      if (!user.phone || user.phone.replace(/\D/g, "").length < 7) errs.phone = true;
-                      if (!user.zipcode) errs.zipcode = true;
-                      if (!user.state) errs.state = true;
-                      if (!user.city) errs.city = true;
-                      setUserErrors(errs);
-                      const data = getFinalSubmissionData();
-                      setFinalData(data)
-                      if (Object.keys(errs).length === 0) {
-                        setShowAuctionModal(true);
-                      }
-                    }}
-                    className="cursor-pointer inline-flex h-11 items-center justify-center rounded-xl bg-gradient-to-r from-[#f6851f] to-[#e63946] px-6 text-sm font-semibold text-white shadow-lg shadow-orange-500/25 transition hover:scale-[1.01]"
-                  >
-                    Submit
-                  </button> 
+                      onClick={() => {
+                        const finalUserData = {
+                          fullName: user.fullName || userState?.display_name || "",
+                          email: user.email || userState?.email || "",
+                          phone: user.phone || userState?.meta?.phone || "",
+                          zipcode: user.zipcode || stateZip || "",
+                          state: user.state || userState?.meta?.state || "",
+                          city: user.city || userState?.meta?.city || "",
+                        };
+
+                        const errs = {};
+                        if (!finalUserData.fullName) errs.fullName = true;
+                        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(finalUserData.email)) errs.email = true;
+                        if (!finalUserData.phone || finalUserData.phone.replace(/\D/g, "").length < 7) errs.phone = true;
+                        if (!finalUserData.zipcode) errs.zipcode = true;
+                        if (!finalUserData.state) errs.state = true;
+                        if (!finalUserData.city) errs.city = true;
+
+                        setUserErrors(errs);
+                        const data = getFinalSubmissionData();
+
+                        if (Object.keys(errs).length === 0) {
+                          setShowAuctionModal(true);
+                        }
+                      }}
+                      className="cursor-pointer inline-flex h-11 items-center justify-center rounded-xl bg-gradient-to-r from-[#f6851f] to-[#e63946] px-6 text-sm font-semibold text-white shadow-lg shadow-orange-500/25 transition hover:scale-[1.01]"
+                    >
+                      Submit
+                    </button>
+                  ) : (
+                    <button
+                      onClick={handleLoginClick}
+                      className="cursor-pointer inline-flex h-11 items-center justify-center rounded-xl bg-gradient-to-r from-[#f6851f] to-[#e63946] px-6 text-sm font-semibold text-white shadow-lg shadow-orange-500/25 transition hover:scale-[1.01]"
+                    >
+                      Login
+                    </button>
+                  )}
                 </div>
               </motion.div>
             )}
@@ -546,36 +568,36 @@ export default function ConditionAssessment() {
                   </span>
                 </div>
                 <div className="max-h-96 overflow-y-auto space-y-2">
-                  {sections.flatMap((section) =>
-                    section.questions.map((q) => (
-                      <div
-                        key={q.key}
-                        className="rounded-xl border border-slate-200 bg-white px-3 py-2 flex flex-col"
-                      >
-                        <div className="flex items-center justify-between text-sm gap-2">
-                          <div className="flex items-center gap-2 min-w-0">
-                            <span>{q.emoji}</span>
-                            <span className="truncate min-w-0">{q.label}</span>
-                          </div>
-                          <span
-                            className={`text-xs font-medium whitespace-nowrap ${
-                              confirmedAnswers[q.key] ? "text-orange-700" : "text-slate-500"
-                            }`}
-                          >
-                            {q.isMultiSelect
-                              ? confirmedAnswers[q.key]?.join(", ") || answers[q.key]?.join(", ") || "—"
-                              : confirmedAnswers[q.key] || answers[q.key] || "—"}
-                          </span>
+                  {questions.map((q) => (
+                    <div
+                      key={q.key}
+                      className="rounded-xl border border-slate-200 bg-white px-3 py-2 flex flex-col"
+                    >
+                      <div className="flex items-center justify-between text-sm gap-2">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span>{q.emoji || '❓'}</span>
+                          <span className="truncate min-w-0">{q.label}</span>
                         </div>
-
-                        {details[q.key] && (
-                          <div className="mt-2 text-xs text-slate-600 bg-slate-50 px-2 py-1 rounded break-words">
-                            {details[q.key].substring(0, 60)}...
-                          </div>
-                        )}
+                        <span
+                          className={`text-xs font-medium whitespace-nowrap ${
+                            q.answer ? "text-orange-700" : "text-slate-500"
+                          }`}
+                        >
+                          {q.isMultiSelect
+                            ? Array.isArray(q.answer) && q.answer.length > 0
+                              ? q.answer.join(", ")
+                              : "—"
+                            : q.answer || "—"}
+                        </span>
                       </div>
-                    ))
-                  )}
+
+                      {q.details && (
+                        <div className="mt-2 text-xs text-slate-600 bg-slate-50 px-2 py-1 rounded break-words">
+                          {q.details.substring(0, 60)}...
+                        </div>
+                      )}
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
@@ -585,17 +607,15 @@ export default function ConditionAssessment() {
 
       <AuctionSelectionModal 
         isOpen={showAuctionModal} 
-        onClose={setShowAuctionModal} 
-        conditionData={finalData}
+        onClose={() => setShowAuctionModal(false)} 
       />
 
-      {/* Login Modal */}
       <LoginModal
-          isOpen={loginModalOpen}
-          onClose={() => setLoginModalOpen(false)}
-          onForgotPassword={handleForgotPassword}
-          onRegister={handleRegister}
-        />
+        isOpen={loginModalOpen}
+        onClose={() => setLoginModalOpen(false)}
+        onForgotPassword={handleForgotPassword}
+        onRegister={handleRegister}
+      />
     </div>
   );
 }

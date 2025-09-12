@@ -33,15 +33,36 @@ export const registerUser = createAsyncThunk(
   }
 );
 
+
+export const registerWithVin = createAsyncThunk(
+  'user/registerWithVin',
+  async (data, { rejectWithValue }) => {
+    try {
+        console.log("data", data)
+        const response = await api.post('/registration/register-with-vin', data);
+        console.log("Response", response)
+        console.log("Response.data", response.data)
+      if (response.data.success) {
+        return response.data; // Assuming response contains { user, token, expires_in }
+      }
+      return rejectWithValue(response.data.message || 'Registration with VIN failed');
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || 'Registration with VIN failed'
+      );
+    }
+  }
+);
+
 export const forgotPassword = createAsyncThunk(
   'user/forgotPassword',
   async (email, { rejectWithValue }) => {
     try {
-        console.log(email)
+        // console.log(email)
       const response = await api.post('/auth/forgot-password', { email });
       if (response.data.success) {
-        console.log(response)
-        console.log(response.data)
+        // console.log(response)
+        // console.log(response.data)
         return response.data;
       }
       return rejectWithValue(response.data.message || 'Failed to send OTP');
@@ -220,6 +241,17 @@ const userSlice = createSlice({
       .addCase(resetPassword.rejected, (state, action) => {
         state.status = 'failed';
         state.error = action.payload;
+      }).addCase(registerWithVin.pending, (state) => {
+        state.status = 'loading';
+        state.error = null;
+      })
+      .addCase(registerWithVin.fulfilled, (state, action) => {
+        state.status = 'succeeded';
+        state.user = action.payload.user; // Store only user object
+      })
+      .addCase(registerWithVin.rejected, (state, action) => {
+        state.status = 'failed';
+        state.error = action.payload?.message || 'Something went wrong';
       });
   },
 });

@@ -1,5 +1,4 @@
-// Updated src/components/Auth/LoginModal.jsx (Fixed resetToken handling and integrated with AuthContext)
-import React, { useEffect, useState, useContext } from "react";
+import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Loader2, CheckCircle2, Mail, Lock, Eye, EyeOff, ShieldCheck, Sparkles, User, XCircle } from "lucide-react";
 import {
@@ -16,7 +15,8 @@ import {
   InputOTPGroup,
   InputOTPSlot,
 } from "@/components/ui/input-otp";
-import { AuthContext } from "@/contexts/AuthContext";
+import { useDispatch, useSelector } from "react-redux";
+import { loginUser, registerUser, forgotPassword, verifyOTP, resetPassword } from "@/redux/slices/userSlice";
 import useAuth from "@/hooks/useAuth";
 
 export default function LoginModal({
@@ -25,60 +25,65 @@ export default function LoginModal({
   title = "Login to Your Account",
   description = "Enter your credentials to access your account",
 }) {
-  const { login, register, forgotPassword, verifyOTP, resetPassword } = useContext(AuthContext);
+  const dispatch = useDispatch();
   const { values, errors, setValue, setError, resetForm } = useAuth();
+  const { status, error } = useSelector((state) => state.user);
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [phase, setPhase] = useState("form"); // form | loading | success | failed | forgot | verify-otp | reset-password
-  const [isLoading, setIsLoading] = useState(false);
   const [isRegisterMode, setIsRegisterMode] = useState(false);
   const [isForgotPasswordMode, setIsForgotPasswordMode] = useState(false);
-  const [resetToken, setResetToken] = useState(null); // Added state for resetToken
+  const [resetToken, setResetToken] = useState(null); // State for resetToken
 
   const navigate = useNavigate();
   const isCloseDisabled = phase === "loading" || phase === "verify-otp";
-
   function validate() {
-    const newErrors = { email: "", username: "", password: "", confirmPassword: "", otp: "", newPassword: "" };
-
+    const newErrors = { email: "", firstName: "", lastName: "", password: "", confirmPassword: "", otp: "", newPassword: "" };
+  
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!values.email) {
       newErrors.email = "Email is required";
     } else if (!emailRegex.test(values.email)) {
       newErrors.email = "Please enter a valid email address";
     }
-
-    if (isRegisterMode && !values.username) {
-      newErrors.username = "Username is required";
-    } else if (isRegisterMode && values.username?.length < 3) {
-      newErrors.username = "Username must be at least 3 characters";
+  
+    if (isRegisterMode && !values.firstName) {
+      newErrors.firstName = "First name is required";
+    } else if (isRegisterMode && values.firstName?.length < 2) {
+      newErrors.firstName = "First name must be at least 2 characters";
     }
-
+  
+    if (isRegisterMode && !values.lastName) {
+      newErrors.lastName = "Last name is required";
+    } else if (isRegisterMode && values.lastName?.length < 2) {
+      newErrors.lastName = "Last name must be at least 2 characters";
+    }
+  
     if ((isRegisterMode || !isForgotPasswordMode) && !values.password) {
       newErrors.password = "Password is required";
     } else if ((isRegisterMode || !isForgotPasswordMode) && values.password?.length < 6) {
       newErrors.password = "Password must be at least 6 characters";
     }
-
+  
     if ((isRegisterMode || phase === "reset-password") && !values.confirmPassword) {
       newErrors.confirmPassword = "Please confirm your password";
     } else if ((isRegisterMode || phase === "reset-password") && values.confirmPassword !== values.password) {
       newErrors.confirmPassword = "Passwords do not match";
     }
-
+  
     if (phase === "reset-password" && !values.newPassword) {
       newErrors.newPassword = "New password is required";
     } else if (phase === "reset-password" && values.newPassword?.length < 6) {
       newErrors.newPassword = "New password must be at least 6 characters";
     }
-
+  
     Object.keys(newErrors).forEach((key) => {
       if (newErrors[key]) setError(key, newErrors[key]);
       else setError(key, "");
     });
-
+  
     return Object.values(newErrors).every((error) => !error);
   }
 
@@ -95,15 +100,12 @@ export default function LoginModal({
 
   async function handleAction(action, ...args) {
     setPhase("loading");
-    setIsLoading(true);
     try {
-      await action(...args);
+      await dispatch(action(...args)).unwrap();
       setPhase("success");
     } catch (error) {
       setPhase("failed");
-      toast.error(error.message || "An error occurred. Please try again.", { duration: 2000 });
-    } finally {
-      setIsLoading(false);
+      toast.error(error || "An error occurred. Please try again.", { duration: 2000 });
     }
   }
 
@@ -112,17 +114,16 @@ export default function LoginModal({
     if (!validate()) return;
 
     if (isRegisterMode) {
-      await handleAction(register, { email: values.email, username: values.username, password: values.password });
+      await handleAction(registerUser, { email: values.email, username: values.username, password: values.password });
     } else if (isForgotPasswordMode && phase === "forgot") {
-      await handleAction(forgotPassword, { email: values.email });
+      await handleAction(forgotPassword, values.email);
       if (phase !== "failed") {
         setPhase("verify-otp");
-        // toast.success("OTP sent to your email", { duration: 2000 });
       }
     } else if (phase === "reset-password") {
-      await handleAction(resetPassword, resetToken, values.newPassword);
+      await handleAction(resetPassword, { token: resetToken, newPassword: values.newPassword });
     } else {
-      await handleAction(login, { username: values.email, password: values.password });
+      await handleAction(loginUser, { username: values.email, password: values.password });
     }
   }
 
@@ -131,22 +132,19 @@ export default function LoginModal({
     if (!validateOtp()) return;
 
     setPhase("loading");
-    setIsLoading(true);
     try {
-      const token = await verifyOTP({ email: values.email, otp: values.otp });
+      const token = await dispatch(verifyOTP({ email: values.email, otp: values.otp })).unwrap();
       setResetToken(token);
       setPhase("reset-password");
     } catch (error) {
       setPhase("failed");
-      setError("otp", error.message || "Invalid OTP");
-      toast.error(error.message || "Invalid OTP", { duration: 2000 });
-    } finally {
-      setIsLoading(false);
+      setError("otp", error || "Invalid OTP");
+      toast.error(error || "Invalid OTP", { duration: 2000 });
     }
   }
 
   function handleOtpModalClose(open) {
-    if (!open && !isLoading) {
+    if (!open && status !== "loading") {
       if (isForgotPasswordMode) {
         setIsForgotPasswordMode(false);
         setPhase("form");
@@ -176,6 +174,7 @@ export default function LoginModal({
   function handleBackToForm() {
     setPhase("form");
     resetForm();
+
   }
 
   function handleForgotPassword() {
@@ -310,6 +309,69 @@ export default function LoginModal({
                     </div>
                   )}
 
+          {
+            isRegisterMode &&
+            <div className="grid grid-cols-2 gap-4">
+            {/* First Name Field */}
+            <div className="grid gap-2">
+              <label htmlFor="firstName" className="text-sm font-medium text-slate-800">
+                First Name
+              </label>
+              <div className="relative">
+                <div className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                  <User className="h-4 w-4" />
+                </div>
+                <input
+                  id="firstName"
+                  type="text"
+                  value={values.firstName || ""}
+                  onChange={(e) => setValue("firstName", e.target.value)}
+                  placeholder="Your first name"
+                  className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-9 pr-3 text-sm outline-none ring-0 transition-shadow focus:shadow-[0_0_0_4px_rgba(15,23,42,0.08)]"
+                />
+              </div>
+              {errors.firstName && (
+                <motion.p
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-xs text-red-600"
+                >
+                  {errors.firstName}
+                </motion.p>
+              )}
+            </div>
+
+            {/* Last Name Field */}
+            <div className="grid gap-2">
+              <label htmlFor="lastName" className="text-sm font-medium text-slate-800">
+                Last Name
+              </label>
+              <div className="relative">
+                <div className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                  <User className="h-4 w-4" />
+                </div>
+                <input
+                  id="lastName"
+                  type="text"
+                  value={values.lastName || ""}
+                  onChange={(e) => setValue("lastName", e.target.value)}
+                  placeholder="Your last name"
+                  className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-9 pr-3 text-sm outline-none ring-0 transition-shadow focus:shadow-[0_0_0_4px_rgba(15,23,42,0.08)]"
+                />
+              </div>
+              {errors.lastName && (
+                <motion.p
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-xs text-red-600"
+                >
+                  {errors.lastName}
+                </motion.p>
+              )}
+            </div>
+          </div>
+          }
+
                   {/* Password Field (Login/Register Mode) */}
                   {phase === "form" && !isForgotPasswordMode && (
                     <div className="grid gap-2">
@@ -428,10 +490,10 @@ export default function LoginModal({
                   <div className="pt-1">
                     <button
                       type="submit"
-                      disabled={isLoading}
+                      disabled={status === "loading"}
                       className="cursor-pointer w-full h-11 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 text-white text-sm font-semibold shadow-lg shadow-orange-500/20 transition hover:from-orange-600 hover:to-amber-600 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      {isLoading ? (
+                      {status === "loading" ? (
                         <div className="flex items-center justify-center gap-2">
                           <Loader2 className="h-4 w-4 animate-spin" />
                           {isRegisterMode
@@ -661,10 +723,10 @@ export default function LoginModal({
               </div>
               <button
                 type="submit"
-                disabled={isLoading}
+                disabled={status === "loading"}
                 className="cursor-pointer w-full h-11 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 text-white text-sm font-semibold shadow-lg shadow-orange-500/20 transition hover:from-orange-600 hover:to-amber-600 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isLoading ? (
+                {status === "loading" ? (
                   <div className="flex items-center justify-center gap-2">
                     <Loader2 className="h-4 w-4 animate-spin" />
                     Verifying OTP...

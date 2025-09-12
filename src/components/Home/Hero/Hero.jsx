@@ -10,13 +10,16 @@ import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import AuctionModal from "@/components/ui/AuctionYourRideModal"
 import { Link } from "react-router-dom"
-import { AuthContext } from "@/contexts/AuthContext"
+import { useSelector } from "react-redux"
+// import { AuthContext } from "@/contexts/AuthContext"
 
 
 export default function Hero() {
   const [open, setOpen] = useState(false)
   const [auctionOpen, setAuctionOpen] = useState(false);
-  const {user, logout} = useContext(AuthContext); 
+  // const {user, logout} = useContext(AuthContext); 
+  const { user } = useSelector((state) => state.user);
+
 
   // 🔹 Variants for animation
   const fadeUp = {

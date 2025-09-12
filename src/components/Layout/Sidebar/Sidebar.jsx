@@ -1,6 +1,6 @@
 import { useContext, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   Car, 
   Clock, 
@@ -17,12 +17,16 @@ import {
   Plus
 } from 'lucide-react';
 import Modal from '@/components/ui/modal';
-import { AuthContext } from '@/contexts/AuthContext';
+import { useDispatch } from 'react-redux';
+import { logout } from '@/redux/slices/userSlice';
+// import { AuthContext } from '@/contexts/AuthContext';
 
 const Sidebar = ({ isCollapsed, onToggle }) => {
   const location = useLocation();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const { logout } = useContext(AuthContext);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  // const { logout } = useContext(AuthContext);
 
   const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -44,7 +48,9 @@ const Sidebar = ({ isCollapsed, onToggle }) => {
       name: 'Logout', 
       icon: LogOut, 
       action: () => {
-        logout(); // Call the logout function from AuthContext
+        // logout(); // Call the logout function from AuthContext
+        dispatch(logout());
+        navigate('/');
       },
     }
   ];

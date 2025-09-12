@@ -1,24 +1,48 @@
-// components/Auth/RoleGuard.jsx
+// src/components/Auth/RoleGuard.jsx
 import React from 'react';
-import { useAuth } from '../../contexts/AuthContext';
+import { useSelector } from 'react-redux';
 import { AlertTriangle } from 'lucide-react';
 
-const RoleGuard = ({ 
-  children, 
-  allowedRoles = [], 
+const RoleGuard = ({
+  children,
+  allowedRoles = [],
   requiredRole = null,
   fallback = null,
-  showMessage = true 
+  showMessage = true,
 }) => {
-  const { user } = useAuth();
+  const { user, loading } = useSelector((state) => state.user);
+  const expiration = localStorage.getItem('authExpiration');
+  const isExpired = expiration && Date.now() > parseInt(expiration);
+
+  // Show loading state if user data is still being fetched
+  if (loading) {
+    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+  }
+
+  // Check if user is authenticated and session is not expired
+  if (!user || isExpired) {
+    return (
+      <div className="flex items-center justify-center min-h-[200px] p-6">
+        <div className="text-center">
+          <AlertTriangle className="h-12 w-12 text-amber-500 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-slate-900 mb-2">
+            Access Denied
+          </h3>
+          <p className="text-sm text-slate-600 mb-4">
+            Please log in to access this content.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   // Check if user has any of the allowed roles
-  const hasAllowedRole = allowedRoles.length > 0 
+  const hasAllowedRole = allowedRoles.length > 0
     ? allowedRoles.includes(user?.role)
     : true;
 
   // Check if user has the required role
-  const hasRequiredRole = requiredRole 
+  const hasRequiredRole = requiredRole
     ? user?.role === requiredRole
     : true;
 

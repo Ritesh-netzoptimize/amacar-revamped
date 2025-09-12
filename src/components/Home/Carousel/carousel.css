@@ -203,7 +203,7 @@
     transform: translateX(-50%);
     display: flex;
     gap: 10px;
-    z-index: 1200;
+    z-index: 9;
 }
 
 .dot {

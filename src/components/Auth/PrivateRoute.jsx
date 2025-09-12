@@ -1,12 +1,14 @@
-// src/components/Auth/PrivateRoute.jsx
-import { useContext } from "react";
-import { Navigate } from "react-router-dom";
-import { AuthContext } from "../../contexts/AuthContext";
+import { useSelector } from 'react-redux';
+import { Navigate } from 'react-router-dom';
 
-export default function PrivateRoute({ children, requiredRole }) {
-  const { user } = useContext(AuthContext);
-  const expiration = localStorage.getItem("authExpiration");
+function PrivateRoute({ children, requiredRole }) {
+  const { user, loading } = useSelector((state) => state.user);
+  const expiration = localStorage.getItem('authExpiration');
   const isExpired = expiration && Date.now() > parseInt(expiration);
+
+  if (loading) {
+    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+  }
 
   if (!user || isExpired) {
     return <Navigate to="/unauthorized" replace />;
@@ -18,3 +20,5 @@ export default function PrivateRoute({ children, requiredRole }) {
 
   return children;
 }
+
+export default PrivateRoute;

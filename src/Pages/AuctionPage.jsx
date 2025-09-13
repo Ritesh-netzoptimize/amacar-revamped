@@ -24,7 +24,9 @@ export default function AuctionPage() {
       dispatch(fetchVehicleDetails({ vin: "JTHBL46FX75021954", zip: "80226" }));
     }
   }, [dispatch, vehicleDetails]);
-
+useEffect(() => {
+    // console.log("avg", vehicleDetails.averagemileage);
+})
   // Initialize form values with Redux data
   const initialValues = useMemo(() => {
     return {
@@ -495,10 +497,16 @@ export default function AuctionPage() {
                                   }`}
                                 />
                                 {key === "mileage" && (
-                                  <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 rounded-md border border-slate-200 bg-white px-2 py-0.5 text-[10px] font-medium text-slate-600">
+                                  <span className="pointer-events-none absolute right-3 top-6 -translate-y-1/2 rounded-md border border-slate-200 bg-white px-2 py-0.5 text-[10px] font-medium text-slate-600">
                                     km
                                   </span>
                                 )}
+                                {key === "mileage" && (
+                                  <p className="text-xs text-slate-500 mt-1">
+                                    Average: {vehicleDetails.averagemileage ? Number(vehicleDetails.averagemileage) + ' km' : 'N/A'}
+                                  </p>
+                                )}
+                                
                               </div>
                             )}
                           </motion.div>

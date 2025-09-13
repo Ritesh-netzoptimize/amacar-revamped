@@ -8,7 +8,8 @@ import {
   CheckCircle,
   Star,
   Trophy,
-  Sparkles
+  Sparkles,
+  Camera
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
@@ -132,15 +133,7 @@ export default function ReviewPage() {
 
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <motion.button
-                onClick={handleGoBack}
-                className="cursor-pointer inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-8 text-sm font-medium text-slate-700 shadow-sm transition hover:scale-[1.02] hover:shadow-md"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                <ArrowLeft className="h-4 w-4" />
-                Go Back
-              </motion.button>
+              
               
               <motion.button
                 onClick={handleLaunchAuction}
@@ -148,8 +141,8 @@ export default function ReviewPage() {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
-                <Rocket className="h-4 w-4" />
-                Launch Auction
+                <Camera className="h-4 w-4" />
+                Upload photos
               </motion.button>
             </div>
           </motion.div>

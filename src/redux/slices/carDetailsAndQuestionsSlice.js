@@ -507,6 +507,7 @@ const carDetailsAndQuestionsSlice = createSlice({
           ...state.vehicleDetails,
           ...vehicleData,
           mileage: state.vehicleDetails.mileage || vehicleData.mileage || '',
+          averageMileage: vehicleData.averageMileage || vehicleData.avg_mileage || vehicleData.average_mileage || '',
           exteriorColor: state.vehicleDetails.exteriorColor || vehicleData.exteriorColor || '',
           interiorColor: state.vehicleDetails.interiorColor || vehicleData.interiorColor || '',
           bodyType:

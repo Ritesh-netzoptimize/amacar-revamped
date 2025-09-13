@@ -576,7 +576,7 @@ export default function ConditionAssessment() {
                       {(!vehicleDetails || Object.keys(vehicleDetails).length === 0) ? (
                         'VIN Required'
                       ) : (
-                        'Continue to Auction'
+                        'Check instant offer'
                       )}
                     </button>
                   ) : (

@@ -14,7 +14,10 @@ export const fetchVehicleDetails = createAsyncThunk(
         `/vehicle/default-values-by-vin?vin=${vin}&zip=${zip}`
       );
       if (response.data.success) {
-        return response.data.values[0]; // Assuming the first item in the values array
+        return {
+          vehicleData: response.data.values[0], // Vehicle data from values array
+          cityState: response.data.city_state    // Location data from city_state
+        };
       } else {
         return rejectWithValue('API request failed');
       }
@@ -447,25 +450,34 @@ const carDetailsAndQuestionsSlice = createSlice({
       })
       .addCase(fetchVehicleDetails.fulfilled, (state, action) => {
         state.loading = false;
-        // Merge fetched details with existing, ensuring additional fields are preserved
+        const { vehicleData, cityState } = action.payload;
+        
+        // Merge fetched vehicle details with existing, ensuring additional fields are preserved
         state.vehicleDetails = {
           ...state.vehicleDetails,
-          ...action.payload,
-          mileage: state.vehicleDetails.mileage || action.payload.mileage || '',
-          exteriorColor: state.vehicleDetails.exteriorColor || action.payload.exteriorColor || '',
-          interiorColor: state.vehicleDetails.interiorColor || action.payload.interiorColor || '',
+          ...vehicleData,
+          mileage: state.vehicleDetails.mileage || vehicleData.mileage || '',
+          exteriorColor: state.vehicleDetails.exteriorColor || vehicleData.exteriorColor || '',
+          interiorColor: state.vehicleDetails.interiorColor || vehicleData.interiorColor || '',
           bodyType:
-            action.payload.bodytype || action.payload.body || state.vehicleDetails.bodyType || '',
-          transmission: action.payload.transmission || state.vehicleDetails.transmission || '',
-          fueltype: action.payload.fueltype || state.vehicleDetails.fueltype || '',
+            vehicleData.bodytype || vehicleData.body || state.vehicleDetails.bodyType || '',
+          transmission: vehicleData.transmission || state.vehicleDetails.transmission || '',
+          fueltype: vehicleData.fueltype || state.vehicleDetails.fueltype || '',
           engineType:
-            action.payload.liters && action.payload.engineconfiguration
-              ? `${action.payload.liters}L ${action.payload.cylinders}${action.payload.engineconfiguration}`
+            vehicleData.liters && vehicleData.engineconfiguration
+              ? `${vehicleData.liters}L ${vehicleData.cylinders}${vehicleData.engineconfiguration}`
               : state.vehicleDetails.engineType || '',
           bodyEngineType:
-            action.payload.fueltype
-              ? `${action.payload.engineconfiguration}${action.payload.cylinders} / ${action.payload.fueltype}`
+            vehicleData.fueltype
+              ? `${vehicleData.engineconfiguration}${vehicleData.cylinders} / ${vehicleData.fueltype}`
               : state.vehicleDetails.bodyEngineType || '',
+        };
+        
+        // Store location data from city_state
+        state.location = {
+          city: cityState.data.city,
+          state: cityState.data.state_name,
+          zipcode: cityState.data.zipcode,
         };
       })
       .addCase(fetchVehicleDetails.rejected, (state, action) => {

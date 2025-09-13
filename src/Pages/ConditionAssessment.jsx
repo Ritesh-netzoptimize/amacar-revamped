@@ -10,7 +10,7 @@ import { updateQuestion, resetQuestions, getInstantCashOffer, clearOffer, setOff
 
 export default function ConditionAssessment() {
   const dispatch = useDispatch();
-  const { questions, vehicleDetails, stateZip, offer, offerStatus, offerError, stateVin } = useSelector((state) => state.carDetailsAndQuestions);
+  const { questions, vehicleDetails, stateZip, offer, offerStatus, offerError, stateVin, location } = useSelector((state) => state.carDetailsAndQuestions);
   const userState = useSelector((state) => state.user.user);
 
   // Initialize questions if invalid
@@ -575,22 +575,22 @@ async function handleInstantCashOffer(userData) {
                     </label>
                     <div className="relative">
                       <Landmark className={`h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 ${
-                        userState?.meta?.state ? "text-orange-500" : "text-slate-400"
+                        location.state ? "text-orange-500" : "text-slate-400"
                       }`} />
                       <input
-                        value={user.state || userState?.meta?.state || ""}
+                        value={user.state || location.state || ""}
                         onChange={(e) => setUser({ ...user, state: e.target.value })}
                         placeholder="State"
-                        disabled={!!userState?.meta?.state}
+                        disabled={!!location.state}
                         className={`h-11 w-full rounded-xl border bg-white pl-9 pr-3 text-sm outline-none transition-shadow ${
-                          userState?.meta?.state 
+                          location.state 
                             ? "bg-orange-50 border-orange-200 text-orange-800 cursor-not-allowed" 
                             : userErrors.state 
                               ? "border-red-300" 
                               : "border-slate-200 focus:shadow-[0_0_0_4px_rgba(246,133,31,0.18)]"
                         }`}
                       />
-                      {userState?.meta?.state && (
+                      {location.state && (
                         <div className="absolute right-3 top-1/2 -translate-y-1/2">
                           <div className="h-2 w-2 bg-orange-500 rounded-full"></div>
                         </div>
@@ -604,22 +604,22 @@ async function handleInstantCashOffer(userData) {
                     </label>
                     <div className="relative">
                       <Building className={`h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 ${
-                        userState?.meta?.city ? "text-orange-500" : "text-slate-400"
+                        location.city ? "text-orange-500" : "text-slate-400"
                       }`} />
                       <input
-                        value={user.city || userState?.meta?.city || ""}
+                        value={user.city || location.city || ""}
                         onChange={(e) => setUser({ ...user, city: e.target.value })}
                         placeholder="City"
-                        disabled={!!userState?.meta?.city}
+                        disabled={!!location.city}
                         className={`h-11 w-full rounded-xl border bg-white pl-9 pr-3 text-sm outline-none transition-shadow ${
-                          userState?.meta?.city 
+                          location.city 
                             ? "bg-orange-50 border-orange-200 text-orange-800 cursor-not-allowed" 
                             : userErrors.city 
                               ? "border-red-300" 
                               : "border-slate-200 focus:shadow-[0_0_0_4px_rgba(246,133,31,0.18)]"
                         }`}
                       />
-                      {userState?.meta?.city && (
+                      {location.city && (
                         <div className="absolute right-3 top-1/2 -translate-y-1/2">
                           <div className="h-2 w-2 bg-orange-500 rounded-full"></div>
                         </div>
@@ -659,8 +659,8 @@ async function handleInstantCashOffer(userData) {
                           email: user.email || userState?.email || "",
                           phone: user.phone || userState?.meta?.phone || "",
                           zipcode: user.zipcode || stateZip || "",
-                          state: user.state || userState?.meta?.state || "",
-                          city: user.city || userState?.meta?.city || "",
+                          state: user.state || location.state || "",
+                          city: user.city || location.city || "",
                         };
 
                         const errs = {};

@@ -517,7 +517,7 @@ async function handleInstantCashOffer(userData) {
                     </label>
                     <div className="relative">
                       <Phone className={`h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 ${
-                        userState?.meta?.phone ? "text-green-500" : "text-slate-400"
+                        userState?.meta?.phone ? "text-orange-500" : "text-slate-400"
                       }`} />
                       <input
                         value={user.phone || userState?.meta?.phone || ""}
@@ -526,7 +526,7 @@ async function handleInstantCashOffer(userData) {
                         disabled={!!userState?.meta?.phone}
                         className={`h-11 w-full rounded-xl border bg-white pl-9 pr-3 text-sm outline-none transition-shadow ${
                           userState?.meta?.phone 
-                            ? "bg-green-50 border-green-200 text-green-800 cursor-not-allowed" 
+                            ? "bg-orange-50 border-orange-200 text-orange-800 cursor-not-allowed" 
                             : userErrors.phone 
                               ? "border-red-300" 
                               : "border-slate-200 focus:shadow-[0_0_0_4px_rgba(246,133,31,0.18)]"
@@ -534,7 +534,7 @@ async function handleInstantCashOffer(userData) {
                       />
                       {userState?.meta?.phone && (
                         <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                          <div className="h-2 w-2 bg-green-500 rounded-full"></div>
+                          <div className="h-2 w-2 bg-orange-500 rounded-full"></div>
                         </div>
                       )}
                     </div>
@@ -546,7 +546,7 @@ async function handleInstantCashOffer(userData) {
                     </label>
                     <div className="relative">
                       <MapPin className={`h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 ${
-                        userState?.zipcode ? "text-green-500" : "text-slate-400"
+                        userState?.zipcode ? "text-orange-500" : "text-slate-400"
                       }`} />
                       <input
                         value={user.zipcode || stateZip || ""}
@@ -575,7 +575,7 @@ async function handleInstantCashOffer(userData) {
                     </label>
                     <div className="relative">
                       <Landmark className={`h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 ${
-                        userState?.meta?.state ? "text-green-500" : "text-slate-400"
+                        userState?.meta?.state ? "text-orange-500" : "text-slate-400"
                       }`} />
                       <input
                         value={user.state || userState?.meta?.state || ""}
@@ -584,7 +584,7 @@ async function handleInstantCashOffer(userData) {
                         disabled={!!userState?.meta?.state}
                         className={`h-11 w-full rounded-xl border bg-white pl-9 pr-3 text-sm outline-none transition-shadow ${
                           userState?.meta?.state 
-                            ? "bg-green-50 border-green-200 text-green-800 cursor-not-allowed" 
+                            ? "bg-orange-50 border-orange-200 text-orange-800 cursor-not-allowed" 
                             : userErrors.state 
                               ? "border-red-300" 
                               : "border-slate-200 focus:shadow-[0_0_0_4px_rgba(246,133,31,0.18)]"
@@ -592,7 +592,7 @@ async function handleInstantCashOffer(userData) {
                       />
                       {userState?.meta?.state && (
                         <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                          <div className="h-2 w-2 bg-green-500 rounded-full"></div>
+                          <div className="h-2 w-2 bg-orange-500 rounded-full"></div>
                         </div>
                       )}
                     </div>
@@ -604,7 +604,7 @@ async function handleInstantCashOffer(userData) {
                     </label>
                     <div className="relative">
                       <Building className={`h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 ${
-                        userState?.meta?.city ? "text-green-500" : "text-slate-400"
+                        userState?.meta?.city ? "text-orange-500" : "text-slate-400"
                       }`} />
                       <input
                         value={user.city || userState?.meta?.city || ""}
@@ -613,7 +613,7 @@ async function handleInstantCashOffer(userData) {
                         disabled={!!userState?.meta?.city}
                         className={`h-11 w-full rounded-xl border bg-white pl-9 pr-3 text-sm outline-none transition-shadow ${
                           userState?.meta?.city 
-                            ? "bg-green-50 border-green-200 text-green-800 cursor-not-allowed" 
+                            ? "bg-orange-50 border-orange-200 text-orange-800 cursor-not-allowed" 
                             : userErrors.city 
                               ? "border-red-300" 
                               : "border-slate-200 focus:shadow-[0_0_0_4px_rgba(246,133,31,0.18)]"
@@ -621,7 +621,7 @@ async function handleInstantCashOffer(userData) {
                       />
                       {userState?.meta?.city && (
                         <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                          <div className="h-2 w-2 bg-green-500 rounded-full"></div>
+                          <div className="h-2 w-2 bg-orange-500 rounded-full"></div>
                         </div>
                       )}
                     </div>

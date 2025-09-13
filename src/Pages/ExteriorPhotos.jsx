@@ -1,16 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { CheckCircle, ChevronRight, ChevronLeft, X } from 'lucide-react';
+import { CheckCircle, ChevronRight, ChevronLeft, X, AlertCircle } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { uploadVehicleImage, deleteVehicleImage, addUploadedImage, removeUploadedImage, clearImageUploadError, clearImageDeleteError } from '@/redux/slices/carDetailsAndQuestionsSlice';
 
 export default function VehiclePhotos() {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const questions = useSelector((state) => state?.carDetailsAndQuestions?.questions);
+  const { uploadedImages, imageUploadStatus, imageUploadError, imageDeleteStatus, imageDeleteError } = useSelector((state) => state?.carDetailsAndQuestions);
 
   // Mock data and handlers for standalone usage
   const data = { photos: [] };
-  const [productId, setProductId] = useState(null);
+  const [productId, setProductId] = useState("3649"); // Default product ID for testing
   const location = useLocation();
   const onChange = (newData) => {
     // console.log('Photos updated:', newData);
@@ -127,43 +130,67 @@ export default function VehiclePhotos() {
   const isComplete = uploadedRequiredCount >= totalRequired;
 
   const handleSinglePhotoUpload = async (file, id) => {
+    if (!productId) {
+      console.error('Product ID is required for image upload');
+      return;
+    }
+
     setUploadingMap((prev) => ({ ...prev, [id]: true }));
     setProgressMap((prev) => ({ ...prev, [id]: 0 }));
 
-    for (let progress = 0; progress <= 100; progress += 20) {
-      setProgressMap((prev) => ({ ...prev, [id]: progress }));
-      await new Promise((resolve) => setTimeout(resolve, 100));
-    }
+    try {
+      // Create image name based on requirement ID
+      const imageName = `image_${id}_view`;
+      
+      // Dispatch the upload action
+      const result = await dispatch(uploadVehicleImage({
+        file,
+        productId,
+        imageName
+      })).unwrap();
 
-    const newPhoto = {
-      id: `${id}_${Date.now()}`,
-      file,
-      url: URL.createObjectURL(file),
-      requirement: id,
-      timestamp: new Date(),
-    };
+      console.log('Image upload successful:', result);
 
-    if (id.startsWith('accident_')) {
-      setAccidentPhotos((prev) => {
-        const updatedPhotos = prev.map(p => 
-          p.id === id ? { ...p, ...newPhoto } : p
-        );
-        return updatedPhotos;
+      // Create local photo object for display
+      const newPhoto = {
+        id: `${id}_${Date.now()}`,
+        file,
+        url: result.localUrl, // Use local URL for immediate display
+        serverUrl: result.imageUrl, // Store server URL
+        requirement: id,
+        timestamp: new Date(),
+        attachmentId: result.attachmentId,
+        metaKey: result.metaKey,
+        uploaded: true
+      };
+
+      if (id.startsWith('accident_')) {
+        setAccidentPhotos((prev) => {
+          const updatedPhotos = prev.map(p => 
+            p.id === id ? { ...p, ...newPhoto } : p
+          );
+          return updatedPhotos;
+        });
+      } else {
+        setPhotos((prev) => [...prev, newPhoto]);
+      }
+
+    } catch (error) {
+      console.error('Image upload failed:', error);
+      // Show error to user
+      alert(`Failed to upload image: ${error}`);
+    } finally {
+      setUploadingMap((prev) => {
+        const next = { ...prev };
+        delete next[id];
+        return next;
       });
-    } else {
-      setPhotos((prev) => [...prev, newPhoto]);
+      setProgressMap((prev) => {
+        const next = { ...prev };
+        delete next[id];
+        return next;
+      });
     }
-
-    setUploadingMap((prev) => {
-      const next = { ...prev };
-      delete next[id];
-      return next;
-    });
-    setProgressMap((prev) => {
-      const next = { ...prev };
-      delete next[id];
-      return next;
-    });
   };
 
   const handleFileUpload = async (files, requirementId) => {
@@ -190,11 +217,41 @@ export default function VehiclePhotos() {
     setDragActive(false);
   };
 
-  const removePhoto = (photoId, isAccidentPhoto = false) => {
-    if (isAccidentPhoto) {
-      setAccidentPhotos((prev) => prev.filter((photo) => photo.id !== photoId));
-    } else {
-      setPhotos((prev) => prev.filter((photo) => photo.id !== photoId));
+  const removePhoto = async (photoId, isAccidentPhoto = false) => {
+    try {
+      // Find the photo to get attachment ID
+      const photoToDelete = isAccidentPhoto 
+        ? accidentPhotos.find(photo => photo.id === photoId)
+        : photos.find(photo => photo.id === photoId);
+
+      // If photo was uploaded to server, delete it via API
+      if (photoToDelete && photoToDelete.attachmentId) {
+        console.log('Deleting image from server:', photoToDelete.attachmentId);
+        
+        const result = await dispatch(deleteVehicleImage({
+          attachmentId: photoToDelete.attachmentId
+        })).unwrap();
+
+        console.log('Image delete successful:', result);
+      }
+
+      // Remove from local state regardless of API success
+      if (isAccidentPhoto) {
+        setAccidentPhotos((prev) => prev.filter((photo) => photo.id !== photoId));
+      } else {
+        setPhotos((prev) => prev.filter((photo) => photo.id !== photoId));
+      }
+
+    } catch (error) {
+      console.error('Image delete failed:', error);
+      // Still remove from local state even if API call failed
+      if (isAccidentPhoto) {
+        setAccidentPhotos((prev) => prev.filter((photo) => photo.id !== photoId));
+      } else {
+        setPhotos((prev) => prev.filter((photo) => photo.id !== photoId));
+      }
+      // Show error to user
+      alert(`Failed to delete image from server: ${error}. Image removed locally.`);
     }
   };
 
@@ -248,6 +305,48 @@ export default function VehiclePhotos() {
             />
           </div>
         </motion.div>
+
+        {/* Image Upload Error Display */}
+        {imageUploadError && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-3"
+          >
+            <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
+            <div className="flex-1">
+              <p className="text-sm text-red-800 font-medium">Image Upload Failed</p>
+              <p className="text-sm text-red-600">{imageUploadError}</p>
+            </div>
+            <button
+              onClick={() => dispatch(clearImageUploadError())}
+              className="text-red-600 hover:text-red-800 text-sm underline"
+            >
+              Dismiss
+            </button>
+          </motion.div>
+        )}
+
+        {/* Image Delete Error Display */}
+        {imageDeleteError && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-3"
+          >
+            <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
+            <div className="flex-1">
+              <p className="text-sm text-red-800 font-medium">Image Delete Failed</p>
+              <p className="text-sm text-red-600">{imageDeleteError}</p>
+            </div>
+            <button
+              onClick={() => dispatch(clearImageDeleteError())}
+              className="text-red-600 hover:text-red-800 text-sm underline"
+            >
+              Dismiss
+            </button>
+          </motion.div>
+        )}
 
         {/* Photo Requirements Grid */}
         <motion.div
@@ -312,15 +411,23 @@ export default function VehiclePhotos() {
                             e.stopPropagation();
                             removePhoto(uploadedPhoto.id);
                           }}
-                          className="bg-red-500 text-white rounded-full p-2 hover:bg-red-600 transition-colors shadow-sm"
+                          disabled={imageDeleteStatus === 'deleting'}
+                          className="bg-red-500 text-white rounded-full p-2 hover:bg-red-600 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                          <X className="w-5 h-5" />
+                          {imageDeleteStatus === 'deleting' ? (
+                            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                          ) : (
+                            <X className="w-5 h-5" />
+                          )}
                         </button>
                       </div>
                       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
                         <div className="flex items-center space-x-2 text-white">
                           <CheckCircle className="w-4 h-4 text-green-400" />
                           <span className="text-sm font-medium">{photo.label}</span>
+                          {uploadedPhoto.uploaded && (
+                            <span className="text-xs bg-green-600 px-2 py-1 rounded-full">Uploaded</span>
+                          )}
                         </div>
                         <p className="text-xs text-slate-200">{photo.description}</p>
                       </div>
@@ -347,10 +454,17 @@ export default function VehiclePhotos() {
                   )}
                   <input
                     type="file"
-                    accept="image/*"
+                    accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
                     onChange={(e) => {
                       if (e.target.files && e.target.files[0]) {
-                        handleSinglePhotoUpload(e.target.files[0], photo.id);
+                        const file = e.target.files[0];
+                        // Validate file type
+                        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+                        if (!allowedTypes.includes(file.type)) {
+                          alert('Invalid file type. Only JPG, JPEG, PNG, GIF, and WEBP are allowed.');
+                          return;
+                        }
+                        handleSinglePhotoUpload(file, photo.id);
                       }
                     }}
                     className="hidden"
@@ -445,15 +559,23 @@ export default function VehiclePhotos() {
                               e.stopPropagation();
                               removePhoto(uploadedPhoto.id, true);
                             }}
-                            className="bg-red-500 text-white rounded-full p-2 hover:bg-red-600 transition-colors shadow-sm"
+                            disabled={imageDeleteStatus === 'deleting'}
+                            className="bg-red-500 text-white rounded-full p-2 hover:bg-red-600 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                           >
-                            <X className="w-5 h-5" />
+                            {imageDeleteStatus === 'deleting' ? (
+                              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                            ) : (
+                              <X className="w-5 h-5" />
+                            )}
                           </button>
                         </div>
                         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
                           <div className="flex items-center space-x-2 text-white">
                             <CheckCircle className="w-4 h-4 text-green-400" />
                             <span className="text-sm font-medium">{photo.label}</span>
+                            {uploadedPhoto.uploaded && (
+                              <span className="text-xs bg-green-600 px-2 py-1 rounded-full">Uploaded</span>
+                            )}
                           </div>
                           <p className="text-xs text-slate-200">{photo.description}</p>
                         </div>
@@ -472,10 +594,17 @@ export default function VehiclePhotos() {
                     )}
                     <input
                       type="file"
-                      accept="image/*"
+                      accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
                       onChange={(e) => {
                         if (e.target.files && e.target.files[0]) {
-                          handleSinglePhotoUpload(e.target.files[0], photo.id);
+                          const file = e.target.files[0];
+                          // Validate file type
+                          const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+                          if (!allowedTypes.includes(file.type)) {
+                            alert('Invalid file type. Only JPG, JPEG, PNG, GIF, and WEBP are allowed.');
+                            return;
+                          }
+                          handleSinglePhotoUpload(file, photo.id);
                         }
                       }}
                       className="hidden"

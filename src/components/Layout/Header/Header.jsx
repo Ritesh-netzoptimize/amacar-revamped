@@ -18,7 +18,7 @@ export default function Header() {
   
     const handleLoginClick = (e) => {
       e.preventDefault();
-      dispatch(setLoginRedirect("/dashboard"));
+      dispatch(setLoginRedirect(null)); // Stay on current page
       setLoginModalOpen(true);
       setOpen(false);
     };

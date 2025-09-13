@@ -42,6 +42,16 @@ export default function AuctionPage() {
         }
         return value;
       })(),
+      fuelType: (() => {
+        const value = vehicleDetails?.fueltype || vehicleDetails?.fuelType;
+        if (
+          !value || // null, undefined, empty
+          ["n/a", "n / a", "na", "null"].includes(String(value).trim().toLowerCase())
+        ) {
+          return "";
+        }
+        return value;
+      })(),
       engineType: vehicleDetails.liters && vehicleDetails.engineconfiguration
         ? `${vehicleDetails.liters}L ${vehicleDetails.cylinders}${vehicleDetails.engineconfiguration}`
         : "",
@@ -90,14 +100,23 @@ export default function AuctionPage() {
         type: "select",
         options: ["Sedan", "SUV", "Hatchback", "Truck", "Coupe", "Convertible", "Van"],
       },
+      
       {
         key: "transmission",
         label: "Transmission",
         placeholder: "Select transmission",
         Icon: Cog,
         type: "select",
-        options: ["Automatic", "Manual"],
+        options: ["Automatic", "Manual", "CVT", "DCT", "Semi-automatic", "Tiptronic", "Automated manual", "DSG", "Torque Converter auto", "EV"],
       },
+      {
+        key: "fuelType",
+        label: "Fuel Type",
+        placeholder: "Select fuel type",
+        Icon: Fuel,
+        type: "select",
+        options: ["Gasoline", "Diesel", "Gas", "Electric", "Hybrid", "CNG", "LPG", "Flex-Fuel", "Ethanol", "Hydrogen Fuel Cell"],
+      },    
       {
         key: "engineType",
         label: "Engine Type",
@@ -177,7 +196,7 @@ export default function AuctionPage() {
       case 1:
         return fields.filter(({ key }) => ["exteriorColor", "interiorColor"].includes(key));
       case 2:
-        return fields.filter(({ key }) => ["engineType", "bodyEngineType"].includes(key));
+        return fields.filter(({ key }) => ["engineType", "bodyEngineType", "fuelType"].includes(key));
       default:
         return [];
     }
@@ -222,7 +241,7 @@ export default function AuctionPage() {
         transition={{ duration: 7, repeat: Infinity }}
       />
 
-      <div className="mx-auto max-w-7xl px-6 py-12">
+      <div className="mx-auto max-w-7xl px-6 ">
         <h1 className="mb-[1.5rem] text-center text-4xl text-[#f6851f] font-bold">
           Vehicle Details
         </h1>
@@ -257,7 +276,7 @@ export default function AuctionPage() {
         )}
 
         {/* Main content grid */}
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 mb-32">
           {/* Left: Form panel */}
           <div className="lg:col-span-8">
             <div className="rounded-2xl border border-white/60 bg-white/70 p-6 shadow-xl backdrop-blur-xl md:p-8">
@@ -435,6 +454,31 @@ export default function AuctionPage() {
                                     })}
                                   </div>
                                 </div>
+                              ) : key === "fuelType" ? (
+                                <div className="">
+                                  <div className="flex flex-wrap gap-2">
+                                    {options.map((opt) => {
+                                      const selected = value === opt;
+                                      return (
+                                        <button
+                                          key={opt}
+                                          type="button"
+                                          onClick={() => {
+                                            handleChange(key, opt);
+                                            handleBlur(key);
+                                          }}
+                                          className={`cursor-pointer inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+                                            selected
+                                              ? "border-[#f6851f] bg-orange-50 text-slate-900"
+                                              : "border-slate-200 bg-white text-slate-700 hover:border-slate-300"
+                                          }`}
+                                        >
+                                          <Fuel className="h-4 w-4 text-slate-500" /> {opt}
+                                        </button>
+                                      );
+                                    })}
+                                  </div>
+                                </div>
                               ) : null
                             ) : (
                               <div className="relative">
@@ -520,7 +564,7 @@ export default function AuctionPage() {
                     </div>
                     <div>
                       <p className="text-sm font-medium text-slate-900">Live Preview</p>
-                      <p className="text-xs text-slate-600">{completedCount}/7 complete</p>
+                      <p className="text-xs text-slate-600">{completedCount}/8 complete</p>
                     </div>
                   </div>
                 </div>
@@ -528,7 +572,7 @@ export default function AuctionPage() {
                   <motion.div
                     className="h-2 rounded-full bg-gradient-to-r from-[#f6851f] to-[#e63946]"
                     initial={{ width: 0 }}
-                    animate={{ width: `${Math.min(100, (completedCount / 7) * 100)}%` }}
+                    animate={{ width: `${Math.min(100, (completedCount / 8) * 100)}%` }}
                     transition={{ duration: 0.5 }}
                   />
                 </div>
@@ -546,6 +590,10 @@ export default function AuctionPage() {
                   <div className="rounded-xl border border-slate-200 bg-white p-3">
                     <p className="text-xs text-slate-500">Transmission</p>
                     <p className="font-medium text-slate-900">{values.transmission || "-"}</p>
+                  </div>
+                  <div className="rounded-xl border border-slate-200 bg-white p-3">
+                    <p className="text-xs text-slate-500">Fuel Type</p>
+                    <p className="font-medium text-slate-900">{values.fuelType || "—"}</p>
                   </div>
                   <div className="rounded-xl border border-slate-200 bg-white p-3">
                     <p className="text-xs text-slate-500">Exterior</p>

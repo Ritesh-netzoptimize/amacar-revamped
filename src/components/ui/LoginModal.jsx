@@ -183,17 +183,13 @@ export default function LoginModal({
 
   function handleSuccessAction() {
     toast.success(
-      phase === "reset-password" ? "Password updated successfully" : "Redirecting to dashboard",
+      phase === "reset-password" ? "Password updated successfully" : "Login successful!",
       { duration: 2000 }
     );
 
     setTimeout(() => {
       onClose(false);
-      if (phase === "reset-password") {
-        resetModalToLogin();
-      } else {
-        navigate("/dashboard");
-      }
+      resetModalToLogin();
     }, 2000);
   }
 

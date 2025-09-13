@@ -117,10 +117,8 @@ export function AuthProvider({ children }) {
         // Redirect to requested path (e.g. /dashboard from header)
         navigate(loginRedirect, { replace: true });
         dispatch(clearLoginRedirect());
-      } else {
-        // Default: go to dashboard
-        navigate("/dashboard", { replace: true });
       }
+      // Removed default dashboard redirect - user stays on current page
     }
   }, [user, loginRedirect, dispatch, navigate]);
 

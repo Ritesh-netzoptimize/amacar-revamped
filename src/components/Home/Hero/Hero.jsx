@@ -11,14 +11,30 @@ import { Button } from "@/components/ui/button"
 import AuctionModal from "@/components/ui/AuctionYourRideModal"
 import { Link } from "react-router-dom"
 import { useSelector } from "react-redux"
+import LoginModal from "@/components/ui/LoginModal"
 // import { AuthContext } from "@/contexts/AuthContext"
 
 
 export default function Hero() {
   const [open, setOpen] = useState(false)
   const [auctionOpen, setAuctionOpen] = useState(false);
+  const [loginModalOpen, setLoginModalOpen] = useState(false);
+
   // const {user, logout} = useContext(AuthContext); 
   const { user } = useSelector((state) => state.user);
+  const handleLoginClick = (e) => {
+    e.preventDefault();
+    // dispatch(setLoginRedirect("/dashboard"));
+    setLoginModalOpen(true);
+  };
+
+  const handleForgotPassword = () => {
+    console.log("Open forgot password modal");
+  };
+
+  const handleRegister = () => {
+    console.log("Open register modal");
+  };
 
 
   // 🔹 Variants for animation
@@ -51,13 +67,18 @@ export default function Hero() {
           Get top offers on your used car in minutes—without the usual hassle.
         </motion.p>
 
-        <motion.div className="hero-ctas" variants={fadeUp} custom={0.4}>
-          <a href="#" className="btn-white" onClick={(e) => {
+        <motion.div className="hero-ctas " variants={fadeUp} custom={0.4}>
+          {
+            !user ?  <a className="btn-login" href="#" onClick={handleLoginClick}>
+            Login / Register
+          </a> :
+            <a href="#" className="btn-white" onClick={(e) => {
               e.preventDefault()
               setOpen(true)
             }}>
             Get Your Instant Offer
           </a>
+          }
           {
             !user ? <button
             onClick={(e) => {
@@ -77,6 +98,13 @@ export default function Hero() {
         isOpen={auctionOpen}
         onClose={setAuctionOpen}
       />
+
+        <LoginModal
+          isOpen={loginModalOpen}
+          onClose={() => setLoginModalOpen(false)}
+          onForgotPassword={handleForgotPassword}
+          onRegister={handleRegister}
+        />
 
       {/* 🔹 Reusable Modal */}
       <Modal

@@ -82,6 +82,81 @@ export const getInstantCashOffer = createAsyncThunk(
   }
 );
 
+// Async thunk for uploading vehicle images
+export const uploadVehicleImage = createAsyncThunk(
+  'carDetailsAndQuestions/uploadVehicleImage',
+  async ({ file, productId, imageName }, { rejectWithValue }) => {
+    try {
+      console.log('Uploading vehicle image:', { productId, imageName, fileName: file.name });
+      
+      // Validate file type
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+      if (!allowedTypes.includes(file.type)) {
+        return rejectWithValue('Invalid file type. Only JPG, JPEG, PNG, GIF, and WEBP are allowed.');
+      }
+
+      // Create FormData
+      const formData = new FormData();
+      formData.append('image', file);
+      formData.append('product_id', productId);
+      formData.append('image_name', imageName);
+
+      // Upload image
+      const response = await api.post('/vehicle/upload-image', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      console.log('Image upload API response:', response.data);
+
+      if (response.data.success) {
+        return {
+          attachmentId: response.data.attachment_id,
+          imageUrl: response.data.image_url,
+          metaKey: response.data.meta_key,
+          productId: response.data.product_id,
+          imageName: imageName,
+          localUrl: URL.createObjectURL(file) // Keep local URL for immediate display
+        };
+      } else {
+        return rejectWithValue(response.data.message || 'Failed to upload image');
+      }
+    } catch (error) {
+      console.log('Image upload API error:', error.response?.data || error.message);
+      return rejectWithValue(error.response?.data?.message || error.message || 'Failed to upload image');
+    }
+  }
+);
+
+// Async thunk for deleting vehicle images
+export const deleteVehicleImage = createAsyncThunk(
+  'carDetailsAndQuestions/deleteVehicleImage',
+  async ({ attachmentId }, { rejectWithValue }) => {
+    try {
+      console.log('Deleting vehicle image:', { attachmentId });
+      
+      const response = await api.post('/vehicle/delete-image', {
+        attachment_id: attachmentId
+      });
+
+      console.log('Image delete API response:', response.data);
+
+      if (response.data.success) {
+        return {
+          attachmentId: response.data.attachment_id,
+          message: response.data.message
+        };
+      } else {
+        return rejectWithValue(response.data.message || 'Failed to delete image');
+      }
+    } catch (error) {
+      console.log('Image delete API error:', error.response?.data || error.message);
+      return rejectWithValue(error.response?.data?.message || error.message || 'Failed to delete image');
+    }
+  }
+);
+
 // Initial questions with defaults
 const initialQuestions = [
   {
@@ -207,6 +282,13 @@ const initialState = {
   },
   offerStatus: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
   offerError: null,
+  // Image upload state
+  uploadedImages: [], // Array of successfully uploaded images
+  imageUploadStatus: 'idle', // 'idle' | 'uploading' | 'succeeded' | 'failed'
+  imageUploadError: null,
+  // Image delete state
+  imageDeleteStatus: 'idle', // 'idle' | 'deleting' | 'succeeded' | 'failed'
+  imageDeleteError: null,
 };
 
 // Create slice
@@ -339,6 +421,23 @@ const carDetailsAndQuestionsSlice = createSlice({
       state.offerError = action.payload;
       state.offerStatus = 'failed';
     },
+    // Image upload actions
+    addUploadedImage: (state, action) => {
+      state.uploadedImages.push(action.payload);
+    },
+    removeUploadedImage: (state, action) => {
+      state.uploadedImages = state.uploadedImages.filter(img => img.id !== action.payload);
+    },
+    clearImageUploadError: (state) => {
+      state.imageUploadError = null;
+    },
+    clearUploadedImages: (state) => {
+      state.uploadedImages = [];
+    },
+    // Image delete actions
+    clearImageDeleteError: (state) => {
+      state.imageDeleteError = null;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -358,6 +457,7 @@ const carDetailsAndQuestionsSlice = createSlice({
           bodyType:
             action.payload.bodytype || action.payload.body || state.vehicleDetails.bodyType || '',
           transmission: action.payload.transmission || state.vehicleDetails.transmission || '',
+          fueltype: action.payload.fueltype || state.vehicleDetails.fueltype || '',
           engineType:
             action.payload.liters && action.payload.engineconfiguration
               ? `${action.payload.liters}L ${action.payload.cylinders}${action.payload.engineconfiguration}`
@@ -404,6 +504,35 @@ const carDetailsAndQuestionsSlice = createSlice({
       .addCase(getInstantCashOffer.rejected, (state, action) => {
         state.offerStatus = 'failed';
         state.offerError = action.payload;
+      })
+      // Image upload reducers
+      .addCase(uploadVehicleImage.pending, (state) => {
+        state.imageUploadStatus = 'uploading';
+        state.imageUploadError = null;
+      })
+      .addCase(uploadVehicleImage.fulfilled, (state, action) => {
+        state.imageUploadStatus = 'succeeded';
+        state.uploadedImages.push(action.payload);
+        state.imageUploadError = null;
+      })
+      .addCase(uploadVehicleImage.rejected, (state, action) => {
+        state.imageUploadStatus = 'failed';
+        state.imageUploadError = action.payload;
+      })
+      // Image delete reducers
+      .addCase(deleteVehicleImage.pending, (state) => {
+        state.imageDeleteStatus = 'deleting';
+        state.imageDeleteError = null;
+      })
+      .addCase(deleteVehicleImage.fulfilled, (state, action) => {
+        state.imageDeleteStatus = 'succeeded';
+        // Remove the deleted image from uploadedImages
+        state.uploadedImages = state.uploadedImages.filter(img => img.attachmentId !== action.payload.attachmentId);
+        state.imageDeleteError = null;
+      })
+      .addCase(deleteVehicleImage.rejected, (state, action) => {
+        state.imageDeleteStatus = 'failed';
+        state.imageDeleteError = action.payload;
       });
   },
 });
@@ -424,6 +553,11 @@ export const {
   clearOffer,
   setOfferError,
   setStateVin,
+  addUploadedImage,
+  removeUploadedImage,
+  clearImageUploadError,
+  clearUploadedImages,
+  clearImageDeleteError
 } = carDetailsAndQuestionsSlice.actions;
 
 // Export reducer

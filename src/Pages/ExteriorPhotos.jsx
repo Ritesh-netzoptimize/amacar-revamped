@@ -503,7 +503,6 @@ export default function VehiclePhotos() {
                             <span className="text-xs bg-green-600 px-2 py-1 rounded-full">Uploaded</span>
                           )}
                         </div>
-                        <p className="text-xs text-slate-200">{photo.description}</p>
                       </div>
                     </div>
                   ) : (
@@ -512,7 +511,6 @@ export default function VehiclePhotos() {
                         {photo.icon}
                       </div>
                       <p className="text-sm font-semibold text-slate-800 mb-2">{photo.label}</p>
-                      <p className="text-xs text-slate-500 mb-4">{photo.description}</p>
                       <div className='border-2 border-slate-300 p-2 rounded-md'>
                         <button
                           onClick={() => {
@@ -651,7 +649,6 @@ export default function VehiclePhotos() {
                               <span className="text-xs bg-green-600 px-2 py-1 rounded-full">Uploaded</span>
                             )}
                           </div>
-                          <p className="text-xs text-slate-200">{photo.description}</p>
                         </div>
                       </div>
                     ) : (
@@ -660,7 +657,6 @@ export default function VehiclePhotos() {
                           {photo.icon}
                         </div>
                         <p className="text-sm font-semibold text-slate-800 mb-2">{photo.label}</p>
-                        <p className="text-xs text-slate-500 mb-3">{photo.description}</p>
                         <div className="w-9 h-9 rounded-full border-2 border-dashed border-slate-300 group-hover:border-[#f6851f] group-hover:bg-orange-50/20 flex items-center justify-center transition-all">
                           <span className="text-slate-400 group-hover:text-[#f6851f] text-xl">+</span>
                         </div>

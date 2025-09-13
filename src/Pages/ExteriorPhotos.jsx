@@ -3,13 +3,14 @@ import { motion } from 'framer-motion';
 import { CheckCircle, ChevronRight, ChevronLeft, X, AlertCircle } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { uploadVehicleImage, deleteVehicleImage, addUploadedImage, removeUploadedImage, clearImageUploadError, clearImageDeleteError } from '@/redux/slices/carDetailsAndQuestionsSlice';
+import { uploadVehicleImage, deleteVehicleImage, addUploadedImage, removeUploadedImage, clearImageUploadError, clearImageDeleteError, startAuction, clearAuctionStartError } from '@/redux/slices/carDetailsAndQuestionsSlice';
+import toast from 'react-hot-toast';
 
 export default function VehiclePhotos() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const questions = useSelector((state) => state?.carDetailsAndQuestions?.questions);
-  const { uploadedImages, imageUploadStatus, imageUploadError, imageDeleteStatus, imageDeleteError } = useSelector((state) => state?.carDetailsAndQuestions);
+  const { uploadedImages, imageUploadStatus, imageUploadError, imageDeleteStatus, imageDeleteError, auctionStartStatus, auctionStartError, auctionData } = useSelector((state) => state?.carDetailsAndQuestions);
 
   // Mock data and handlers for standalone usage
   const data = { photos: [] };
@@ -18,8 +19,35 @@ export default function VehiclePhotos() {
   const onChange = (newData) => {
     // console.log('Photos updated:', newData);
   };
+  const handleStartAuction = async () => {
+    if (!productId) {
+      toast.error('Product ID is required to start auction');
+      return;
+    }
+
+    try {
+      // Clear any previous errors
+      dispatch(clearAuctionStartError());
+      
+      // Start the auction
+      const result = await dispatch(startAuction({ productId })).unwrap();
+      
+      // Show success toast
+      toast.success(result.message || 'Auction started successfully!');
+      
+      // Navigate to review page after a short delay
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 1000);
+      
+    } catch (error) {
+      console.error('Failed to start auction:', error);
+      toast.error(error || 'Failed to start auction. Please try again.');
+    }
+  };
+
   const onNext = () => {
-    navigate('/review');
+    handleStartAuction();
   };
   const onPrev = () => {
     navigate('/auction-page');
@@ -54,7 +82,7 @@ export default function VehiclePhotos() {
       label: 'Rear View', 
       icon: '🚙', 
       description: 'Full rear view of the vehicle', 
-      required: true,
+      required: false,
       tip: 'Ensure the entire rear is visible and avoid dark shadows.'
     },
     { 
@@ -62,7 +90,7 @@ export default function VehiclePhotos() {
       label: 'Driver Side', 
       icon: '🚘', 
       description: 'Complete driver side profile', 
-      required: true,
+      required: false,
       tip: 'Stand far enough so the whole side fits clearly in the frame.'
     },
     { 
@@ -70,7 +98,7 @@ export default function VehiclePhotos() {
       label: 'Dashboard', 
       icon: '📊', 
       description: 'Front dashboard and controls', 
-      required: true,
+      required: false,
       tip: 'Switch on ignition so dashboard details are clearly lit.'
     },
     { 
@@ -341,6 +369,27 @@ export default function VehiclePhotos() {
             </div>
             <button
               onClick={() => dispatch(clearImageDeleteError())}
+              className="text-red-600 hover:text-red-800 text-sm underline"
+            >
+              Dismiss
+            </button>
+          </motion.div>
+        )}
+
+        {/* Auction Start Error Display */}
+        {auctionStartError && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-3"
+          >
+            <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
+            <div className="flex-1">
+              <p className="text-sm text-red-800 font-medium">Auction Start Failed</p>
+              <p className="text-sm text-red-600">{auctionStartError}</p>
+            </div>
+            <button
+              onClick={() => dispatch(clearAuctionStartError())}
               className="text-red-600 hover:text-red-800 text-sm underline"
             >
               Dismiss
@@ -639,15 +688,24 @@ export default function VehiclePhotos() {
               onChange({ photos: [...photos, ...accidentPhotos.filter(p => p.file)] });
               onNext();
             }}
-            disabled={!isComplete}
+            disabled={!isComplete || auctionStartStatus === 'starting'}
             className={`cursor-pointer inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#f6851f] to-[#e63946] px-8 text-sm font-semibold text-white shadow-lg shadow-orange-500/20 transition-all ${
-              !isComplete ? 'opacity-50 cursor-not-allowed' : ''
+              !isComplete || auctionStartStatus === 'starting' ? 'opacity-50 cursor-not-allowed' : ''
             }`}
-            whileHover={isComplete ? { scale: 1.03 } : {}}
-            whileTap={isComplete ? { scale: 0.97 } : {}}
+            whileHover={isComplete && auctionStartStatus !== 'starting' ? { scale: 1.03 } : {}}
+            whileTap={isComplete && auctionStartStatus !== 'starting' ? { scale: 0.97 } : {}}
           >
-            Continue
-            <ChevronRight className="w-5 h-5" />
+            {auctionStartStatus === 'starting' ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                Starting Auction...
+              </>
+            ) : (
+              <>
+                Continue
+                <ChevronRight className="w-5 h-5" />
+              </>
+            )}
           </motion.button>
         </motion.div>
       </div>

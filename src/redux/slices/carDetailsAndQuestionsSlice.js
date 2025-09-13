@@ -160,6 +160,32 @@ export const deleteVehicleImage = createAsyncThunk(
   }
 );
 
+// Async thunk for starting auction
+export const startAuction = createAsyncThunk(
+  'carDetailsAndQuestions/startAuction',
+  async ({ productId }, { rejectWithValue }) => {
+    try {
+      console.log('Starting auction for product:', productId);
+      const response = await api.post('/auction/start', { product_id: productId });
+      console.log('Auction start API response:', response.data);
+      if (response.data.success) {
+        return {
+          productId: response.data.product_id,
+          message: response.data.message,
+          auctionStartedAt: response.data.auction_started_at,
+          auctionEndsAt: response.data.auction_ends_at,
+          timestamp: response.data.timestamp
+        };
+      } else {
+        return rejectWithValue(response.data.message || 'Failed to start auction');
+      }
+    } catch (error) {
+      console.log('Auction start API error:', error.response?.data || error.message);
+      return rejectWithValue(error.response?.data?.message || error.message || 'Failed to start auction');
+    }
+  }
+);
+
 // Initial questions with defaults
 const initialQuestions = [
   {
@@ -293,6 +319,16 @@ const initialState = {
   // Image delete state
   imageDeleteStatus: 'idle', // 'idle' | 'deleting' | 'succeeded' | 'failed'
   imageDeleteError: null,
+  // Auction start state
+  auctionStartStatus: 'idle', // 'idle' | 'starting' | 'succeeded' | 'failed'
+  auctionStartError: null,
+  auctionData: {
+    productId: null,
+    message: null,
+    auctionStartedAt: null,
+    auctionEndsAt: null,
+    timestamp: null
+  },
 };
 
 // Create slice
@@ -442,6 +478,19 @@ const carDetailsAndQuestionsSlice = createSlice({
     clearImageDeleteError: (state) => {
       state.imageDeleteError = null;
     },
+    // Auction start reducers
+    clearAuctionStartError: (state) => {
+      state.auctionStartError = null;
+    },
+    clearAuctionData: (state) => {
+      state.auctionData = {
+        productId: null,
+        message: null,
+        auctionStartedAt: null,
+        auctionEndsAt: null,
+        timestamp: null
+      };
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -547,6 +596,26 @@ const carDetailsAndQuestionsSlice = createSlice({
       .addCase(deleteVehicleImage.rejected, (state, action) => {
         state.imageDeleteStatus = 'failed';
         state.imageDeleteError = action.payload;
+      })
+      // Auction start extraReducers
+      .addCase(startAuction.pending, (state) => {
+        state.auctionStartStatus = 'starting';
+        state.auctionStartError = null;
+      })
+      .addCase(startAuction.fulfilled, (state, action) => {
+        state.auctionStartStatus = 'succeeded';
+        state.auctionData = {
+          productId: action.payload.productId,
+          message: action.payload.message,
+          auctionStartedAt: action.payload.auctionStartedAt,
+          auctionEndsAt: action.payload.auctionEndsAt,
+          timestamp: action.payload.timestamp
+        };
+        state.auctionStartError = null;
+      })
+      .addCase(startAuction.rejected, (state, action) => {
+        state.auctionStartStatus = 'failed';
+        state.auctionStartError = action.payload;
       });
   },
 });
@@ -571,7 +640,9 @@ export const {
   removeUploadedImage,
   clearImageUploadError,
   clearUploadedImages,
-  clearImageDeleteError
+  clearImageDeleteError,
+  clearAuctionStartError,
+  clearAuctionData
 } = carDetailsAndQuestionsSlice.actions;
 
 // Export reducer

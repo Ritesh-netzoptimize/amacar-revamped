@@ -93,10 +93,10 @@ export const uploadVehicleImage = createAsyncThunk(
       console.log('Uploading vehicle image:', { productId, imageName, fileName: file.name });
       
       // Validate file type
-      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
-      if (!allowedTypes.includes(file.type)) {
-        return rejectWithValue('Invalid file type. Only JPG, JPEG, PNG, GIF, and WEBP are allowed.');
-      }
+    //   const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    //   if (!allowedTypes.includes(file.type)) {
+    //     return rejectWithValue('Invalid file type. Only JPG, JPEG, PNG, GIF, and WEBP are allowed.');
+    //   }
 
       // Create FormData
       const formData = new FormData();
@@ -254,6 +254,7 @@ const initialQuestions = [
 
 // Initial state
 const initialState = {
+  productId: null,
   vehicleDetails: {},
   stateZip: "",
   stateVin: "",
@@ -512,6 +513,7 @@ const carDetailsAndQuestionsSlice = createSlice({
         state.offerStatus = 'succeeded';
         state.offer = action.payload;
         state.offerError = null;
+        state.productId = action.payload.productId;
       })
       .addCase(getInstantCashOffer.rejected, (state, action) => {
         state.offerStatus = 'failed';

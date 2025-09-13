@@ -13,7 +13,7 @@ export default function VehiclePhotos() {
 
   // Mock data and handlers for standalone usage
   const data = { photos: [] };
-  const [productId, setProductId] = useState("3649"); // Default product ID for testing
+  const productId = useSelector((state) => state?.carDetailsAndQuestions?.productId);
   const location = useLocation();
   const onChange = (newData) => {
     // console.log('Photos updated:', newData);

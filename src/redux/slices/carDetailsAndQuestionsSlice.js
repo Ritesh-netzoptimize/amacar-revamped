@@ -6,15 +6,13 @@ let vin = "";
 // Async thunk to fetch vehicle details
 export const fetchVehicleDetails = createAsyncThunk(
   'carDetailsAndQuestions/fetchVehicleDetails',
-  async ({vin, zip}, { rejectWithValue }) => {
+  async ({ vin, zip }, { rejectWithValue }) => {
     try {
-        vin = vin;
-        console.log(vin, zip)
+      vin = vin;
+      console.log(vin, zip);
       const response = await api.get(
         `/vehicle/default-values-by-vin?vin=${vin}&zip=${zip}`
       );
-    //   console.log(response)
-    //   console.log(response.data)
       if (response.data.success) {
         return response.data.values[0]; // Assuming the first item in the values array
       } else {
@@ -31,17 +29,17 @@ export const fetchCityStateByZip = createAsyncThunk(
   'carDetailsAndQuestions/fetchCityStateByZip',
   async (zip, { rejectWithValue }) => {
     try {
-      console.log('Fetching city/state for ZIP:', zip);
+    //   console.log('Fetching city/state for ZIP:', zip);
       const response = await api.get(
         `/location/city-state-by-zip?zipcode=${zip}`
       );
-      console.log('City/State API response:', response.data);
+    //   console.log('City/State API response:', response.data);
       
       if (response.data.success) {
         return {
           city: response.data.location.city,
           state: response.data.location.state_name,
-          zipcode: response.data.location.zipcode
+          zipcode: response.data.location.zipcode,
         };
       } else {
         return rejectWithValue(response.data.message || 'Invalid ZIP code');
@@ -69,7 +67,7 @@ export const getInstantCashOffer = createAsyncThunk(
           isAuctionable: response.data.is_auctionable,
           productId: response.data.product_id,
           emailSent: response.data.email_sent,
-          timestamp: response.data.timestamp
+          timestamp: response.data.timestamp,
         };
       } else {
         console.log('API returned success: false, message:', response.data.message);
@@ -136,7 +134,7 @@ const initialQuestions = [
     emoji: '⭐',
     options: ['Navigation', 'Leather', 'Sunroof', 'Alloy Wheels', 'Premium Audio', 'Safety+'],
     positive: [],
-    needsDetails: [], // Fixed: Added empty array instead of undefined
+    needsDetails: [],
     isMultiSelect: true,
     answer: [],
     details: '',
@@ -187,7 +185,7 @@ const initialState = {
   location: {
     city: "",
     state: "",
-    zipcode: ""
+    zipcode: "",
   },
   locationStatus: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
   locationError: null,
@@ -196,7 +194,7 @@ const initialState = {
     phase: 'form', // 'form' | 'loading' | 'success' | 'error'
     isLoading: false,
     error: null,
-    successMessage: null
+    successMessage: null,
   },
   // Instant Cash Offer state
   offer: {
@@ -205,10 +203,10 @@ const initialState = {
     isAuctionable: null,
     productId: null,
     emailSent: null,
-    timestamp: null
+    timestamp: null,
   },
   offerStatus: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
-  offerError: null
+  offerError: null,
 };
 
 // Create slice
@@ -217,16 +215,38 @@ const carDetailsAndQuestionsSlice = createSlice({
   initialState,
   reducers: {
     setVehicleDetails: (state, action) => {
-        state.vehicleDetails = action.payload.vehicle_data[0]; // storing the first vehicle
-        state.stateZip = action.payload.user.meta.zip_code; // optional if you want zip code
-      },
-      clearVehicleDetails: (state) => {
-        state.vehicleDetails = {};
-        state.stateZip = "";
-      },
-      setStateVin: (state, action) => {
-        state.stateVin = action.payload;
-      },
+      const { vehicle_data } = action.payload;
+      const newDetails = vehicle_data[0] || {};
+
+      // Merge new details with existing vehicleDetails, prioritizing new details
+      state.vehicleDetails = {
+        ...state.vehicleDetails,
+        ...newDetails,
+        // Ensure these fields are included, using provided values or empty strings
+        mileage: newDetails.mileage || state.vehicleDetails.mileage || '',
+        exteriorColor: newDetails.exteriorColor || state.vehicleDetails.exteriorColor || '',
+        interiorColor: newDetails.interiorColor || state.vehicleDetails.interiorColor || '',
+        bodyType: newDetails.bodytype || newDetails.body || state.vehicleDetails.bodyType || '',
+        transmission: newDetails.transmission || state.vehicleDetails.transmission || '',
+        engineType:
+          newDetails.liters && newDetails.engineconfiguration
+            ? `${newDetails.liters}L ${newDetails.cylinders}${newDetails.engineconfiguration}`
+            : state.vehicleDetails.engineType || '',
+        bodyEngineType:
+          newDetails.fueltype
+            ? `${newDetails.engineconfiguration}${newDetails.cylinders} / ${newDetails.fueltype}`
+            : state.vehicleDetails.bodyEngineType || '',
+      };
+
+      
+    },
+    clearVehicleDetails: (state) => {
+      state.vehicleDetails = {};
+      state.stateZip = "";
+    },
+    setStateVin: (state, action) => {
+      state.stateVin = action.payload;
+    },
     updateQuestion: (state, action) => {
       const { key, answer, details } = action.payload;
       const question = state.questions.find((q) => q.key === key);
@@ -254,16 +274,16 @@ const carDetailsAndQuestionsSlice = createSlice({
       }
     },
     resetQuestions: (state) => {
-      state.questions = initialQuestions.map(q => ({ ...q })); // Deep copy to avoid reference issues
+      state.questions = initialQuestions.map((q) => ({ ...q })); // Deep copy to avoid reference issues
     },
     setZipState: (state, action) => {
-        state.stateZip = action.payload;  // ✅ update zip
-      },
+      state.stateZip = action.payload; // Update zip
+    },
     clearLocation: (state) => {
       state.location = {
         city: "",
         state: "",
-        zipcode: ""
+        zipcode: "",
       };
       state.locationStatus = 'idle';
       state.locationError = null;
@@ -299,7 +319,7 @@ const carDetailsAndQuestionsSlice = createSlice({
         phase: 'form',
         isLoading: false,
         error: null,
-        successMessage: null
+        successMessage: null,
       };
     },
     // Instant Cash Offer actions
@@ -310,7 +330,7 @@ const carDetailsAndQuestionsSlice = createSlice({
         isAuctionable: null,
         productId: null,
         emailSent: null,
-        timestamp: null
+        timestamp: null,
       };
       state.offerStatus = 'idle';
       state.offerError = null;
@@ -328,7 +348,25 @@ const carDetailsAndQuestionsSlice = createSlice({
       })
       .addCase(fetchVehicleDetails.fulfilled, (state, action) => {
         state.loading = false;
-        state.vehicleDetails = action.payload;
+        // Merge fetched details with existing, ensuring additional fields are preserved
+        state.vehicleDetails = {
+          ...state.vehicleDetails,
+          ...action.payload,
+          mileage: state.vehicleDetails.mileage || action.payload.mileage || '',
+          exteriorColor: state.vehicleDetails.exteriorColor || action.payload.exteriorColor || '',
+          interiorColor: state.vehicleDetails.interiorColor || action.payload.interiorColor || '',
+          bodyType:
+            action.payload.bodytype || action.payload.body || state.vehicleDetails.bodyType || '',
+          transmission: action.payload.transmission || state.vehicleDetails.transmission || '',
+          engineType:
+            action.payload.liters && action.payload.engineconfiguration
+              ? `${action.payload.liters}L ${action.payload.cylinders}${action.payload.engineconfiguration}`
+              : state.vehicleDetails.engineType || '',
+          bodyEngineType:
+            action.payload.fueltype
+              ? `${action.payload.engineconfiguration}${action.payload.cylinders} / ${action.payload.fueltype}`
+              : state.vehicleDetails.bodyEngineType || '',
+        };
       })
       .addCase(fetchVehicleDetails.rejected, (state, action) => {
         state.loading = false;
@@ -347,11 +385,10 @@ const carDetailsAndQuestionsSlice = createSlice({
       .addCase(fetchCityStateByZip.rejected, (state, action) => {
         state.locationStatus = 'failed';
         state.locationError = action.payload;
-        // Clear location data on error
         state.location = {
           city: "",
           state: "",
-          zipcode: ""
+          zipcode: "",
         };
       })
       // Instant Cash Offer reducers
@@ -372,12 +409,12 @@ const carDetailsAndQuestionsSlice = createSlice({
 });
 
 // Export actions
-export const { 
-  setVehicleDetails, 
-  updateQuestion, 
-  resetQuestions, 
-  setZipState, 
-  clearLocation, 
+export const {
+  setVehicleDetails,
+  updateQuestion,
+  resetQuestions,
+  setZipState,
+  clearLocation,
   setLocationError,
   setModalPhase,
   setModalLoading,
@@ -386,7 +423,7 @@ export const {
   resetModalState,
   clearOffer,
   setOfferError,
-  setStateVin
+  setStateVin,
 } = carDetailsAndQuestionsSlice.actions;
 
 // Export reducer

@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { fetchVehicleDetails } from "../redux/slices/carDetailsAndQuestionsSlice";
+import { fetchVehicleDetails, setVehicleDetails } from "../redux/slices/carDetailsAndQuestionsSlice";
 
 export default function AuctionPage() {
   const navigate = useNavigate();
@@ -158,6 +158,11 @@ export default function AuctionPage() {
     setTouched(Object.fromEntries(Object.keys(values).map(k => [k, true])));
     
     if (allValid) {
+        dispatch(
+            setVehicleDetails({
+              vehicle_data: [{ ...vehicleDetails, ...values }],
+            })
+          );
       navigate("/condition-assessment", { state: { vehicleDetails: values } });
     }
   }

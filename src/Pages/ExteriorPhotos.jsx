@@ -12,7 +12,7 @@ export default function VehiclePhotos() {
   const data = { photos: [] };
   const location = useLocation();
   const onChange = (newData) => {
-    console.log('Photos updated:', newData);
+    // console.log('Photos updated:', newData);
   };
   const onNext = () => {
     navigate('/review');
@@ -22,7 +22,7 @@ export default function VehiclePhotos() {
   };
 
   useEffect(() => {
-    console.log("questions", questions);
+    // console.log("questions", questions);
   });
 
   // Check if accident is Minor or Major

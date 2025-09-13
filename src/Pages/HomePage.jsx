@@ -14,7 +14,7 @@ import { useEffect } from 'react'
 export default function HomePage() {
   const { userState, loading } = useSelector((state) => state.user);
     useEffect(() => {
-        console.log(userState);
+        // console.log(userState); 
     })
     return (
         <>

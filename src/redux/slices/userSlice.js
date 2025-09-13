@@ -38,10 +38,10 @@ export const registerWithVin = createAsyncThunk(
   'user/registerWithVin',
   async (data, { rejectWithValue }) => {
     try {
-        console.log("data", data)
+        // console.log("data", data)
         const response = await api.post('/registration/register-with-vin', data);
-        console.log("Response", response)
-        console.log("Response.data", response.data)
+        // console.log("Response", response)
+        // console.log("Response.data", response.data)
       if (response.data.success) {
         // Store auth tokens in localStorage for persistence
         if (response.data.token) {

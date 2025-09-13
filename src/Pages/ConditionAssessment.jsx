@@ -1,3 +1,4 @@
+import { toast } from "react-hot-toast";
 import React, { useMemo, useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { CheckCircle2, Circle, ChevronLeft, ChevronRight, User, Mail, Phone, MapPin, Landmark, Building } from "lucide-react";
@@ -9,14 +10,10 @@ import { updateQuestion, resetQuestions, getInstantCashOffer, clearOffer, setOff
 
 export default function ConditionAssessment() {
   const dispatch = useDispatch();
-  const { questions, vehicleDetails, stateZip, offer, offerStatus, offerError } = useSelector((state) => state.carDetailsAndQuestions);
+  const { questions, vehicleDetails, stateZip, offer, offerStatus, offerError, stateVin } = useSelector((state) => state.carDetailsAndQuestions);
   const userState = useSelector((state) => state.user.user);
 
   // Initialize questions if invalid
-
-  useEffect(() => {
-    console.log(userState);
-  })
 
   useEffect(() => {
     if (!questions || questions.length !== 8) {
@@ -134,7 +131,7 @@ export default function ConditionAssessment() {
       transmission: vehicleData.transmission || vehicleData.transmission_type || "Unknown",
       engine_type: vehicleData.engine_type || vehicleData.engineType || vehicleData.engine || "Unknown",
       powertrain_description: vehicleData.powertrain_description || vehicleData.powertrainDescription || vehicleData.drivetrain || "Unknown",
-      vin: vehicleData.vin || vehicleData.vin_number || "",
+      vin: vehicleData.vin || vehicleData.vin_number || stateVin || "",
       zip_code: userData.zipcode || ""
     };
 
@@ -171,45 +168,57 @@ export default function ConditionAssessment() {
     };
   }
 
-  // Handle Instant Cash Offer submission
-  async function handleInstantCashOffer(userData) {
-    try {
-      setIsSubmittingOffer(true);
-      dispatch(clearOffer()); // Clear any previous offer data
 
-      // Check if vehicle details exist
-      if (!vehicleDetails || Object.keys(vehicleDetails).length === 0) {
-        throw new Error('Vehicle details are required. Please complete the VIN lookup first.');
-      }
+async function handleInstantCashOffer(userData) {
+  try {
+    setIsSubmittingOffer(true);
+    dispatch(clearOffer()); // Clear any previous offer data
 
-      const conditionData = getFinalSubmissionData();
-      const offerPayload = buildOfferPayload(userData, vehicleDetails, conditionData);
-
-      console.log('Submitting Instant Cash Offer with payload:', offerPayload);
-
-      const result = await dispatch(getInstantCashOffer(offerPayload)).unwrap();
-      
-      console.log('Instant Cash Offer successful:', result);
-      
-      // On success, you can redirect to a review page or show the offer
-      // For now, we'll just log the success
-      alert(`Instant Cash Offer: $${result.offerAmount}`);
-      
-    } catch (error) {
-      console.error('Instant Cash Offer failed:', error);
-      const errorMessage = error.message || error || 'Failed to get instant cash offer. Please try again.';
-      dispatch(setOfferError(errorMessage));
-    } finally {
-      setIsSubmittingOffer(false);
+    // Check if vehicle details exist
+    if (!vehicleDetails || Object.keys(vehicleDetails).length === 0) {
+      throw new Error("Vehicle details are required. Please complete the VIN lookup first.");
     }
+
+    const conditionData = getFinalSubmissionData();
+    const offerPayload = buildOfferPayload(userData, vehicleDetails, conditionData);
+
+    console.log("Submitting Instant Cash Offer with payload:", offerPayload);
+
+    const result = await dispatch(getInstantCashOffer(offerPayload)).unwrap();
+
+    console.log("Instant Cash Offer successful:", result);
+
+    // ✅ Success state
+    toast.success(`Instant Cash Offer received!`);
+
+    // Open modal only if successful
+    setShowAuctionModal(true);
+
+  } catch (error) {
+    console.error("Instant Cash Offer failed:", error);
+
+    const errorMessage =
+      error.message || error || "Failed to get instant cash offer. Please try again.";
+
+    dispatch(setOfferError(errorMessage));
+
+    // ❌ Error state (no modal, just toast)
+    toast.error(errorMessage, {
+      position: "top-right",
+      autoClose: 3000,
+    });
+  } finally {
+    setIsSubmittingOffer(false);
   }
+}
+
 
   const handleForgotPassword = () => {
-    console.log("Open forgot password modal");
+    // console.log("Open forgot password modal");
   };
 
   const handleRegister = () => {
-    console.log("Open register modal");
+    // console.log("Open register modal");
   };
 
   function selectAnswer(key, value, isMultiSelect = false) {
@@ -267,9 +276,9 @@ export default function ConditionAssessment() {
   }
 
   function renderQuestion(question, questionIndex) {
-    console.log(question)
+    // console.log(question)
     const selected = question.answer;
-    console.log(question.answer)
+    // console.log(question.answer)
     
     // Fixed: Added defensive checks for needsDetails
     const needsDetails = question.isMultiSelect
@@ -697,7 +706,7 @@ export default function ConditionAssessment() {
                   )}
                   
                   {/* Success display for offer */}
-                  {offerStatus === 'succeeded' && offer.offerAmount && (
+                  {/* {offerStatus === 'succeeded' && offer.offerAmount && (
                     <div className="mt-3 p-4 bg-green-50 border border-green-200 rounded-lg">
                       <div className="flex items-center gap-2 mb-2">
                         <CheckCircle2 className="w-5 h-5 text-green-600" />
@@ -722,7 +731,7 @@ export default function ConditionAssessment() {
                         </button>
                       </div>
                     </div>
-                  )}
+                  )} */}
 
                   {/* Error display for offer submission */}
                   {offerError && (

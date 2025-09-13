@@ -1,6 +1,6 @@
-import React, { useState } from "react"
+import React, { useState, useEffect, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Loader2, CheckCircle2, Car, User, Mail, Lock, MapPin, Globe, EyeOff, Eye } from "lucide-react"
+import { Loader2, CheckCircle2, Car, User, Mail, Lock, MapPin, Globe, EyeOff, Eye, XCircle, Sparkles } from "lucide-react"
 import {
   Dialog,
   DialogContent,
@@ -9,8 +9,16 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog"
 import { registerWithVin } from "@/redux/slices/userSlice"
-import { useDispatch } from "react-redux"
-import { setVehicleDetails } from "@/redux/slices/carDetailsAndQuestionsSlice"
+import { useDispatch, useSelector } from "react-redux"
+import { 
+  setVehicleDetails, 
+  fetchCityStateByZip, 
+  clearLocation,
+  setModalLoading,
+  setModalError,
+  setModalSuccess,
+  resetModalState
+} from "@/redux/slices/carDetailsAndQuestionsSlice"
 import { useNavigate } from "react-router-dom"
 
 export default function AuctionModal({
@@ -36,11 +44,57 @@ export default function AuctionModal({
     vin: "", firstName: "", lastName: "", email: "", phone: "",
     password: "", confirmPassword: "", zipCode: "",
   })
-  const [phase, setPhase] = useState("form") // form | loading | success
-  const [isLoading, setIsLoading] = useState(false)
   const navigate = useNavigate();
-  const isCloseDisabled = phase === "loading"
   const dispatch = useDispatch();
+  
+  // Redux state
+  const { 
+    location, 
+    locationStatus, 
+    locationError,
+    modalState 
+  } = useSelector((state) => state.carDetailsAndQuestions);
+  
+  const { status: userStatus, error: userError } = useSelector((state) => state.user);
+  
+  const isCloseDisabled = modalState.isLoading;
+
+  // Debounced ZIP code lookup
+  const debouncedZipLookup = useCallback(
+    (() => {
+      let timeoutId;
+      return (zip) => {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => {
+          if (zip && zip.length === 5 && /^\d{5}$/.test(zip)) {
+            console.log('Dispatching ZIP lookup for:', zip);
+            dispatch(fetchCityStateByZip(zip));
+          } else if (zip.length === 0) {
+            // Clear location when ZIP is empty
+            dispatch(clearLocation());
+            setCity("");
+            setState("");
+          }
+        }, 500);
+      };
+    })(),
+    [dispatch]
+  );
+
+  // Handle ZIP code changes
+  const handleZipCodeChange = (value) => {
+    setZipCode(value);
+    debouncedZipLookup(value);
+  };
+
+  // Update city and state when Redux location changes
+  useEffect(() => {
+    if (locationStatus === 'succeeded' && location.city && location.state) {
+      setCity(location.city);
+      setState(location.state);
+    }
+  }, [location, locationStatus]);
+
   function validate() {
     const newErrors = {
       vin: "", firstName: "", lastName: "", email: "", phone: "",
@@ -107,9 +161,8 @@ export default function AuctionModal({
     // First, validate the form
     if (!validate()) return;
   
-    // Set loading UI state
-    setPhase("loading");
-    setIsLoading(true);
+    // Set loading state in Redux
+    dispatch(setModalLoading(true));
   
     try {
       // Prepare the form values for API
@@ -126,24 +179,26 @@ export default function AuctionModal({
         state,
       };
   
-      // Dispatch registerUser thunk
+      // Dispatch registerWithVin thunk
       const resultAction = await dispatch(registerWithVin(formValues));
   
       if (registerWithVin.fulfilled.match(resultAction)) {
         // Registration successful, store vehicle data in vehicle slice
         dispatch(setVehicleDetails(resultAction.payload));
-        navigate('/auction-page')
-        // Update UI to success
-        setPhase("success");
+        dispatch(setModalSuccess("Registration successful! Redirecting to auction page..."));
+        
+        // Navigate after a short delay to show success message
+        setTimeout(() => {
+          navigate('/auction-page');
+        }, 1500);
       } else {
         // Handle API error
-        console.error('Registration failed:', resultAction.payload);
-        // You can show error in UI if you want
+        const errorMessage = resultAction.payload || 'Registration failed. Please try again.';
+        dispatch(setModalError(errorMessage));
       }
     } catch (err) {
       console.error('Unexpected error:', err);
-    } finally {
-      setIsLoading(false);
+      dispatch(setModalError('An unexpected error occurred. Please try again.'));
     }
   }
   
@@ -172,8 +227,7 @@ export default function AuctionModal({
 
   const handleOpenChange = (open) => {
     if (!open) {
-      // Reset state when dialog is closed
-      setPhase("form")
+      // Reset all local state
       setVin("");
       setZipCode("");
       setCity("");
@@ -185,6 +239,11 @@ export default function AuctionModal({
       setPhone("");
       setState("");
       setErrors({});
+      
+      // Reset Redux state
+      dispatch(clearLocation());
+      dispatch(resetModalState());
+      
       onClose(false);
     }
   };
@@ -207,7 +266,7 @@ export default function AuctionModal({
 
         <div className="p-6 pt-0 min-h-[520px]">
           <AnimatePresence mode="wait">
-            {phase === "form" && (
+            {modalState.phase === "form" && (
               <motion.form
                 key="form"
                 onSubmit={handleSubmit}
@@ -351,7 +410,7 @@ export default function AuctionModal({
                        {/* City Field */}
                     <div className="grid gap-1">
                       <label htmlFor="city" className="text-sm font-medium text-slate-800">
-                        City
+                       
                       </label>
                       <div className="relative">
                         <div className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
@@ -362,8 +421,15 @@ export default function AuctionModal({
                           type="text"
                           value={city}
                           onChange={(e) => setCity(e.target.value)}
-                          placeholder="Enter your city"
-                          className="h-11 w-full rounded-md border border-slate-200 px-9 py-2 text-sm outline-none ring-0 transition-shadow focus:shadow-[0_0_0_3px_rgba(249,115,22,0.5)]"
+                          placeholder={locationStatus === 'loading' ? "Looking up city..." : "Enter your city"}
+                          disabled={locationStatus === 'loading' || (locationStatus === 'succeeded' && city)}
+                          className={`h-11 w-full rounded-md border px-9 py-2 text-sm outline-none ring-0 transition-shadow ${
+                            locationStatus === 'loading' 
+                              ? 'border-slate-200 bg-slate-50 text-slate-500 cursor-not-allowed' 
+                              : locationStatus === 'succeeded' && city
+                              ? 'border-green-200 bg-green-50 text-green-800 cursor-not-allowed'
+                              : 'border-slate-200 focus:shadow-[0_0_0_3px_rgba(249,115,22,0.5)]'
+                          }`}
                         />
                       </div>
                     </div>
@@ -385,12 +451,18 @@ export default function AuctionModal({
                         </div>
                         <input
                           id="zipCode"
-                          type="text"
+                          type="number"
+                          maxLength={5}
                           value={zipCode}
-                          onChange={(e) => setZipCode(e.target.value)}
+                          onChange={(e) => handleZipCodeChange(e.target.value)}
                           placeholder="Enter your zip code"
                           className="h-11 w-full rounded-md border border-slate-200 px-9 py-2 text-sm outline-none ring-0 transition-shadow focus:shadow-[0_0_0_3px_rgba(249,115,22,0.5)]"
                         />
+                        {locationStatus === 'loading' && (
+                          <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2">
+                            <Loader2 className="h-4 w-4 animate-spin text-slate-400" />
+                          </div>
+                        )}
                       </div>
                       {errors.zipCode && (
                         <motion.p 
@@ -399,6 +471,15 @@ export default function AuctionModal({
                           className="text-xs text-red-500 mt-1"
                         >
                           {errors.zipCode}
+                        </motion.p>
+                      )}
+                      {locationError && (
+                        <motion.p 
+                          initial={{ opacity: 0, y: -4 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="text-xs text-red-500 mt-1"
+                        >
+                          {locationError}
                         </motion.p>
                       )}
                     </div>
@@ -508,7 +589,7 @@ export default function AuctionModal({
                     {/* State Field */}
                     <div className="grid gap-1">
                       <label htmlFor="state" className="text-sm font-medium text-slate-800">
-                        State
+                       
                       </label>
                       <div className="relative">
                         <div className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
@@ -519,8 +600,15 @@ export default function AuctionModal({
                           type="text"
                           value={state}
                           onChange={(e) => setState(e.target.value)}
-                          placeholder="Enter your state"
-                          className="h-11 w-full rounded-md border border-slate-200 px-9 py-2 text-sm outline-none ring-0 transition-shadow focus:shadow-[0_0_0_3px_rgba(249,115,22,0.5)]"
+                          placeholder={locationStatus === 'loading' ? "Looking up state..." : "Enter your state"}
+                          disabled={locationStatus === 'loading' || (locationStatus === 'succeeded' && state)}
+                          className={`h-11 w-full rounded-md border px-9 py-2 text-sm outline-none ring-0 transition-shadow ${
+                            locationStatus === 'loading' 
+                              ? 'border-slate-200 bg-slate-50 text-slate-500 cursor-not-allowed' 
+                              : locationStatus === 'succeeded' && state
+                              ? 'border-green-200 bg-green-50 text-green-800 cursor-not-allowed'
+                              : 'border-slate-200 focus:shadow-[0_0_0_3px_rgba(249,115,22,0.5)]'
+                          }`}
                         />
                       </div>
                     </div>
@@ -534,10 +622,10 @@ export default function AuctionModal({
                 <div className="pt-2">
                   <button
                     type="submit"
-                    disabled={isLoading}
+                    disabled={modalState.isLoading}
                     className="cursor-pointer w-full h-11 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 text-white text-sm font-semibold shadow-lg shadow-orange-500/20 transition hover:from-orange-600 hover:to-amber-600 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {isLoading ? (
+                    {modalState.isLoading ? (
                       <div className="flex items-center justify-center gap-2">
                         <Loader2 className="h-4 w-4 animate-spin" />
                         Submitting...
@@ -560,7 +648,7 @@ export default function AuctionModal({
               </motion.form>
             )}
 
-            {phase === "loading" && (
+            {modalState.phase === "loading" && (
               <motion.div
                 key="loading"
                 initial={{ opacity: 0, y: 8 }}
@@ -589,7 +677,7 @@ export default function AuctionModal({
               </motion.div>
             )}
 
-            {phase === "success" && (
+            {modalState.phase === "success" && (
               <motion.div
                 key="success"
                 initial={{ opacity: 0, scale: 0.95 }}
@@ -610,9 +698,9 @@ export default function AuctionModal({
                   <Sparkles className="absolute -right-2 -top-2 h-4 w-4 text-amber-500" />
                 </motion.div>
                 <div className="space-y-1">
-                  <h3 className="text-lg font-semibold text-slate-900">Auction Submitted!</h3>
+                  <h3 className="text-lg font-semibold text-slate-900">Registration Successful!</h3>
                   <p className="text-sm text-slate-600">
-                    Your vehicle has been successfully submitted for auction.
+                    {modalState.successMessage || "Your vehicle has been successfully submitted for auction."}
                   </p>
                 </div>
                 <button
@@ -621,6 +709,48 @@ export default function AuctionModal({
                 >
                   Continue
                 </button>
+              </motion.div>
+            )}
+
+            {modalState.phase === "error" && (
+              <motion.div
+                key="error"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.98 }}
+                transition={{ type: "spring", stiffness: 260, damping: 20 }}
+                className="grid gap-5 place-items-center text-center"
+              >
+                <motion.div 
+                  className="relative" 
+                  initial={{ scale: 0.9, opacity: 0 }} 
+                  animate={{ scale: 1, opacity: 1 }} 
+                  transition={{ type: "spring", stiffness: 340, damping: 18 }}
+                >
+                  <div className="grid place-items-center rounded-2xl border border-red-200 bg-gradient-to-b from-white to-red-50 p-4 shadow-sm">
+                    <XCircle className="h-14 w-14 text-red-500" />
+                  </div>
+                </motion.div>
+                <div className="space-y-1">
+                  <h3 className="text-lg font-semibold text-slate-900">Registration Failed</h3>
+                  <p className="text-sm text-slate-600">
+                    {modalState.error || "An error occurred during registration. Please try again."}
+                  </p>
+                </div>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => dispatch(resetModalState())}
+                    className="cursor-pointer px-6 h-11 rounded-xl bg-slate-900 text-white text-sm font-semibold shadow-lg shadow-slate-900/20 hover:bg-slate-800"
+                  >
+                    Try Again
+                  </button>
+                  <button
+                    onClick={() => handleOpenChange(false)}
+                    className="cursor-pointer px-6 h-11 rounded-xl border border-slate-300 text-slate-700 text-sm font-semibold hover:bg-slate-50"
+                  >
+                    Cancel
+                  </button>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>

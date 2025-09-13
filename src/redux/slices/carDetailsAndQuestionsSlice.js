@@ -23,6 +23,33 @@ export const fetchVehicleDetails = createAsyncThunk(
   }
 );
 
+// Async thunk to fetch city and state by ZIP code
+export const fetchCityStateByZip = createAsyncThunk(
+  'carDetailsAndQuestions/fetchCityStateByZip',
+  async (zip, { rejectWithValue }) => {
+    try {
+      console.log('Fetching city/state for ZIP:', zip);
+      const response = await api.get(
+        `/location/city-state-by-zip?zipcode=${zip}`
+      );
+      console.log('City/State API response:', response.data);
+      
+      if (response.data.success) {
+        return {
+          city: response.data.location.city,
+          state: response.data.location.state_name,
+          zipcode: response.data.location.zipcode
+        };
+      } else {
+        return rejectWithValue(response.data.message || 'Invalid ZIP code');
+      }
+    } catch (error) {
+      console.log('City/State API error:', error.response?.data || error.message);
+      return rejectWithValue(error.response?.data?.message || 'Failed to fetch location data');
+    }
+  }
+);
+
 // Initial questions with defaults
 const initialQuestions = [
   {
@@ -122,6 +149,20 @@ const initialState = {
   questions: initialQuestions,
   loading: false,
   error: null,
+  location: {
+    city: "",
+    state: "",
+    zipcode: ""
+  },
+  locationStatus: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
+  locationError: null,
+  // Modal state management
+  modalState: {
+    phase: 'form', // 'form' | 'loading' | 'success' | 'error'
+    isLoading: false,
+    error: null,
+    successMessage: null
+  }
 };
 
 // Create slice
@@ -169,6 +210,49 @@ const carDetailsAndQuestionsSlice = createSlice({
     setZipState: (state, action) => {
         state.stateZip = action.payload;  // ✅ update zip
       },
+    clearLocation: (state) => {
+      state.location = {
+        city: "",
+        state: "",
+        zipcode: ""
+      };
+      state.locationStatus = 'idle';
+      state.locationError = null;
+    },
+    setLocationError: (state, action) => {
+      state.locationError = action.payload;
+      state.locationStatus = 'failed';
+    },
+    // Modal state management actions
+    setModalPhase: (state, action) => {
+      state.modalState.phase = action.payload;
+    },
+    setModalLoading: (state, action) => {
+      state.modalState.isLoading = action.payload;
+      if (action.payload) {
+        state.modalState.phase = 'loading';
+        state.modalState.error = null;
+      }
+    },
+    setModalError: (state, action) => {
+      state.modalState.error = action.payload;
+      state.modalState.phase = 'error';
+      state.modalState.isLoading = false;
+    },
+    setModalSuccess: (state, action) => {
+      state.modalState.successMessage = action.payload;
+      state.modalState.phase = 'success';
+      state.modalState.isLoading = false;
+      state.modalState.error = null;
+    },
+    resetModalState: (state) => {
+      state.modalState = {
+        phase: 'form',
+        isLoading: false,
+        error: null,
+        successMessage: null
+      };
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -183,12 +267,44 @@ const carDetailsAndQuestionsSlice = createSlice({
       .addCase(fetchVehicleDetails.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+      })
+      // City/State by ZIP reducers
+      .addCase(fetchCityStateByZip.pending, (state) => {
+        state.locationStatus = 'loading';
+        state.locationError = null;
+      })
+      .addCase(fetchCityStateByZip.fulfilled, (state, action) => {
+        state.locationStatus = 'succeeded';
+        state.location = action.payload;
+        state.locationError = null;
+      })
+      .addCase(fetchCityStateByZip.rejected, (state, action) => {
+        state.locationStatus = 'failed';
+        state.locationError = action.payload;
+        // Clear location data on error
+        state.location = {
+          city: "",
+          state: "",
+          zipcode: ""
+        };
       });
   },
 });
 
 // Export actions
-export const { setVehicleDetails, updateQuestion, resetQuestions, setZipState } = carDetailsAndQuestionsSlice.actions;
+export const { 
+  setVehicleDetails, 
+  updateQuestion, 
+  resetQuestions, 
+  setZipState, 
+  clearLocation, 
+  setLocationError,
+  setModalPhase,
+  setModalLoading,
+  setModalError,
+  setModalSuccess,
+  resetModalState
+} = carDetailsAndQuestionsSlice.actions;
 
 // Export reducer
 export default carDetailsAndQuestionsSlice.reducer;

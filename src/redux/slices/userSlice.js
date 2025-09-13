@@ -43,6 +43,17 @@ export const registerWithVin = createAsyncThunk(
         console.log("Response", response)
         console.log("Response.data", response.data)
       if (response.data.success) {
+        // Store auth tokens in localStorage for persistence
+        if (response.data.token) {
+          localStorage.setItem('authToken', response.data.token);
+        }
+        if (response.data.user) {
+          localStorage.setItem('authUser', JSON.stringify(response.data.user));
+        }
+        if (response.data.expires_in) {
+          const expirationTime = Date.now() + response.data.expires_in * 1000;
+          localStorage.setItem('authExpiration', expirationTime);
+        }
         return response.data; // Assuming response contains { user, token, expires_in }
       }
       return rejectWithValue(response.data.message || 'Registration with VIN failed');
@@ -76,12 +87,21 @@ export const verifyOTP = createAsyncThunk(
   'user/verifyOTP',
   async (data, { rejectWithValue }) => {
     try {
+      console.log('Sending OTP verification request:', data);
       const response = await api.post('/auth/verify-otp', data);
+      console.log('OTP verification response:', response.data);
+      
       if (response.data.success) {
+        console.log('OTP verification successful, returning token:', response.data.resetToken);
         return response.data.resetToken; // Assuming backend returns resetToken
       }
+      console.log('OTP verification failed - success is false:', response.data);
       return rejectWithValue(response.data.message || 'Invalid OTP');
     } catch (error) {
+      console.log('OTP verification API error:', error.response?.data || error.message);
+      console.log('Full error object:', error);
+      console.log('Error status:', error.response?.status);
+      console.log('Error headers:', error.response?.headers);
       return rejectWithValue(error.response?.data?.message || 'Invalid OTP');
     }
   }
@@ -136,6 +156,9 @@ const userSlice = createSlice({
     resetForm: (state) => {
       state.form.values = {};
       state.form.errors = {};
+    },
+    clearError: (state) => {
+      state.error = null;
     },
     logout: (state) => {
       localStorage.removeItem('authToken');
@@ -241,13 +264,15 @@ const userSlice = createSlice({
       .addCase(resetPassword.rejected, (state, action) => {
         state.status = 'failed';
         state.error = action.payload;
-      }).addCase(registerWithVin.pending, (state) => {
+      })      .addCase(registerWithVin.pending, (state) => {
         state.status = 'loading';
         state.error = null;
       })
       .addCase(registerWithVin.fulfilled, (state, action) => {
         state.status = 'succeeded';
-        state.user = action.payload.user; // Store only user object
+        state.user = action.payload.user;
+        // Auth tokens are already stored in localStorage by the thunk
+        // No need to store them again in Redux state
       })
       .addCase(registerWithVin.rejected, (state, action) => {
         state.status = 'failed';
@@ -256,5 +281,5 @@ const userSlice = createSlice({
   },
 });
 
-export const { setFormValue, setFormError, resetForm, logout, loadUser, setLoginRedirect, clearLoginRedirect } = userSlice.actions;
+export const { setFormValue, setFormError, resetForm, clearError, logout, loadUser, setLoginRedirect, clearLoginRedirect } = userSlice.actions;
 export default userSlice.reducer;

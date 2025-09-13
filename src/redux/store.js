@@ -2,13 +2,13 @@ import { configureStore } from '@reduxjs/toolkit';
 import userReducer from './slices/userSlice';
 import carDetailsAndQuestionsReducer from './slices/carDetailsAndQuestionsSlice';
 import persistReducer from 'redux-persist/es/persistReducer';
-import { carPersistConfig } from './persistConfig';
+import { carPersistConfig, userPersistConfig } from './persistConfig';
 import persistStore from 'redux-persist/es/persistStore';
 import { FLUSH, PAUSE, PERSIST, PURGE, REGISTER, REHYDRATE } from 'redux-persist';
 
 export const store = configureStore({
   reducer: {
-    user: userReducer,
+    user: persistReducer(userPersistConfig, userReducer),
     carDetailsAndQuestions: persistReducer(carPersistConfig, carDetailsAndQuestionsReducer),
   },
   middleware: (getDefaultMiddleware) =>

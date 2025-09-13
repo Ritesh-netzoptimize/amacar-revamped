@@ -16,7 +16,7 @@ import {
   InputOTPSlot,
 } from "@/components/ui/input-otp";
 import { useDispatch, useSelector } from "react-redux";
-import { loginUser, registerUser, forgotPassword, verifyOTP, resetPassword } from "@/redux/slices/userSlice";
+import { loginUser, registerUser, forgotPassword, verifyOTP, resetPassword, clearError } from "@/redux/slices/userSlice";
 import useAuth from "@/hooks/useAuth";
 
 export default function LoginModal({
@@ -131,25 +131,53 @@ export default function LoginModal({
     e?.preventDefault();
     if (!validateOtp()) return;
 
+    console.log("Starting OTP verification with:", { email: values.email, otp: values.otp });
+    console.log("OTP verification attempted at:", new Date().toLocaleTimeString());
+    
+    // Clear any existing OTP error before making the API call
+    setError("otp", "");
+    dispatch(clearError()); // Clear Redux error state
     setPhase("loading");
     try {
       const token = await dispatch(verifyOTP({ email: values.email, otp: values.otp })).unwrap();
+      console.log("OTP verification successful, token:", token);
+      // Clear any OTP error on success
+      setError("otp", "");
+      dispatch(clearError()); // Clear Redux error state on success
       setResetToken(token);
       setPhase("reset-password");
+      console.log("Phase changed to reset-password");
     } catch (error) {
-      setPhase("failed");
-      setError("otp", error || "Invalid OTP");
-      toast.error(error || "Invalid OTP", { duration: 2000 });
+      console.log("OTP verification failed, error:", error);
+      // Stay in verify-otp phase and show error inline
+      setPhase("verify-otp");
+      setError("otp", error || "Wrong OTP. Please try again.");
+      console.log("Phase changed to verify-otp, error set:", error);
+      // Don't show toast for OTP errors as they're displayed inline
     }
   }
 
   function handleOtpModalClose(open) {
     if (!open && status !== "loading") {
-      if (isForgotPasswordMode) {
-        setIsForgotPasswordMode(false);
-        setPhase("form");
-        resetForm();
-      }
+      resetModalToLogin();
+    }
+  }
+
+  // Function to reset modal to default login state
+  function resetModalToLogin() {
+    setIsRegisterMode(false);
+    setIsForgotPasswordMode(false);
+    setPhase("form");
+    setResetToken(null);
+    resetForm();
+    dispatch(clearError()); // Clear Redux error state
+  }
+
+  // Enhanced onClose handler that resets modal to login mode
+  function handleModalClose(open) {
+    if (!open && !isCloseDisabled) {
+      resetModalToLogin();
+      onClose(open);
     }
   }
 
@@ -162,9 +190,7 @@ export default function LoginModal({
     setTimeout(() => {
       onClose(false);
       if (phase === "reset-password") {
-        setIsForgotPasswordMode(false);
-        setPhase("form");
-        resetForm();
+        resetModalToLogin();
       } else {
         navigate("/dashboard");
       }
@@ -181,6 +207,8 @@ export default function LoginModal({
     setIsForgotPasswordMode(true);
     setPhase("forgot");
     resetForm();
+    // Log when OTP is requested for debugging
+    console.log("OTP requested at:", new Date().toLocaleTimeString());
   }
 
   function handleRegister() {
@@ -189,10 +217,7 @@ export default function LoginModal({
   }
 
   function handleBackToLogin() {
-    setIsRegisterMode(false);
-    setIsForgotPasswordMode(false);
-    setPhase("form");
-    resetForm();
+    resetModalToLogin();
   }
 
   useEffect(() => {
@@ -203,7 +228,7 @@ export default function LoginModal({
 
   return (
     <>
-      <Dialog open={isOpen} onOpenChange={isCloseDisabled ? undefined : onClose}>
+      <Dialog open={isOpen} onOpenChange={isCloseDisabled ? undefined : handleModalClose}>
         <DialogContent
           className="sm:max-w-md rounded-2xl shadow-xl p-0 overflow-hidden bg-white"
           showCloseButton={!isCloseDisabled}
@@ -696,7 +721,13 @@ export default function LoginModal({
                   id="otp"
                   maxLength={6}
                   value={values.otp || ""}
-                  onChange={(value) => setValue("otp", value)}
+                  onChange={(value) => {
+                    setValue("otp", value);
+                    // Clear OTP error when user starts typing
+                    if (errors.otp) {
+                      setError("otp", "");
+                    }
+                  }}
                   className="flex gap-2"
                 >
                   <InputOTPGroup className="flex gap-2">
@@ -719,6 +750,12 @@ export default function LoginModal({
                   >
                     {errors.otp}
                   </motion.p>
+                )}
+                {/* Debug info - remove in production */}
+                {process.env.NODE_ENV === 'development' && (
+                  <div className="text-xs text-gray-500">
+                    Debug - OTP Error: {errors.otp || 'none'} | Phase: {phase}
+                  </div>
                 )}
               </div>
               <button

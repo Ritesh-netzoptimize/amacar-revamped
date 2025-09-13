@@ -1,10 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { CheckCircle, ChevronRight, ChevronLeft, X, AlertCircle } from 'lucide-react';
+import { ChevronRight, ChevronLeft, X, AlertCircle, Rocket } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { uploadVehicleImage, deleteVehicleImage, addUploadedImage, removeUploadedImage, clearImageUploadError, clearImageDeleteError, startAuction, clearAuctionStartError } from '@/redux/slices/carDetailsAndQuestionsSlice';
 import toast from 'react-hot-toast';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { CheckCircle, FileText, Shield, Clock, Loader2 } from 'lucide-react';
 
 export default function VehiclePhotos() {
   const navigate = useNavigate();
@@ -47,7 +55,22 @@ export default function VehiclePhotos() {
   };
 
   const onNext = () => {
-    handleStartAuction();
+    setShowTermsModal(true);
+  };
+
+  const handleModalClose = () => {
+    setShowTermsModal(false);
+    setTermsAccepted(false);
+  };
+
+  const handleAcceptTerms = async () => {
+    if (!termsAccepted) {
+      toast.error('Please accept the terms and conditions to continue');
+      return;
+    }
+
+    await handleStartAuction();
+    setShowTermsModal(false);
   };
   const onPrev = () => {
     navigate('/auction-page');
@@ -67,6 +90,8 @@ export default function VehiclePhotos() {
   const [uploadingMap, setUploadingMap] = useState({});
   const [progressMap, setProgressMap] = useState({});
   const [dragActive, setDragActive] = useState(false);
+  const [showTermsModal, setShowTermsModal] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
 
   const photoRequirements = [
     { 
@@ -709,6 +734,123 @@ export default function VehiclePhotos() {
           </motion.button>
         </motion.div>
       </div>
+
+      {/* Terms and Conditions Modal */}
+      <Dialog open={showTermsModal} onOpenChange={handleModalClose}>
+        <DialogContent className="sm:max-w-2xl rounded-2xl shadow-xl p-0 overflow-hidden bg-white">
+          <div className="bg-gradient-to-br from-white via-slate-50 to-slate-100 p-6">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-semibold tracking-tight text-slate-900 flex items-center gap-3">
+                <div className="p-2 bg-purple-100 rounded-xl">
+                  <FileText className="h-6 w-6 text-purple-600" />
+                </div>
+                Terms & Conditions
+              </DialogTitle>
+              <DialogDescription className="text-sm text-slate-600 mt-2">
+                Please review and accept the terms before starting your auction
+              </DialogDescription>
+            </DialogHeader>
+          </div>
+
+          <div className="p-6 max-h-96 overflow-y-auto">
+            <div className="space-y-4">
+              {[
+                {
+                  title: "Auction Agreement",
+                  content: "You agree to sell your vehicle to the highest bidder through our platform. The final price may vary based on final inspection and verification of vehicle condition."
+                },
+                {
+                  title: "Vehicle Condition",
+                  content: "You warrant that all information provided about your vehicle is accurate and complete."
+                },
+                {
+                  title: "Payment Terms",
+                  content: "Payment will be processed within 24 hours of auction completion and acceptance. "
+                },
+              
+              ].map((term, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  className="border border-slate-200 rounded-xl p-4 bg-slate-50/50"
+                >
+                  <h3 className="text-sm font-semibold text-slate-800 mb-2 flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                    {term.title}
+                  </h3>
+                  <p className="text-xs text-slate-600 leading-relaxed">{term.content}</p>
+                </motion.div>
+              ))}
+            </div>
+
+            {/* Trust Indicators */}
+            <div className="mt-6 pt-4 border-t border-slate-200">
+              <div className="flex flex-wrap items-center gap-6 text-slate-500">
+                <div className="flex items-center gap-2">
+                  <Shield className="h-4 w-4" />
+                  <span className="text-xs">Secure Transaction</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4" />
+                  <span className="text-xs">Verified Dealers</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Clock className="h-4 w-4" />
+                  <span className="text-xs">24/7 Support</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Modal Footer */}
+          <div className="p-6 bg-slate-50 border-t border-slate-200">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <input
+                  type="checkbox"
+                  id="terms-checkbox"
+                  checked={termsAccepted}
+                  onChange={(e) => setTermsAccepted(e.target.checked)}
+                  className="h-4 w-4 text-orange-600 border-slate-300 rounded focus:ring-orange-500"
+                />
+                <label htmlFor="terms-checkbox" className="text-sm text-slate-700 cursor-pointer">
+                  I have read and agree to the Terms & Conditions
+                </label>
+              </div>
+              
+              <div className="flex gap-3">
+                <button
+                  onClick={handleModalClose}
+                  className="cursor-pointer px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleAcceptTerms}
+                  disabled={!termsAccepted || auctionStartStatus === 'starting'}
+                  className={`cursor-pointer px-6 py-2 text-sm font-semibold text-white rounded-lg transition-all ${
+                    termsAccepted && auctionStartStatus !== 'starting'
+                      ? 'bg-gradient-to-r from-[#f6851f] to-[#e63946] hover:from-orange-600 hover:to-red-600 shadow-lg'
+                      : 'bg-slate-400 cursor-not-allowed'
+                  }`}
+                >
+                  {auctionStartStatus === 'starting' ? (
+                    <div className="flex items-center gap-2">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Starting Auction...
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2"><Rocket className="w-4 h-4"/>
+                    <p>Start</p></div>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

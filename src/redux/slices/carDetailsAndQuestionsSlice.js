@@ -1,11 +1,14 @@
 import api from '@/lib/api';
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 
+let vin = "";
+
 // Async thunk to fetch vehicle details
 export const fetchVehicleDetails = createAsyncThunk(
   'carDetailsAndQuestions/fetchVehicleDetails',
   async ({vin, zip}, { rejectWithValue }) => {
     try {
+        vin = vin;
         console.log(vin, zip)
       const response = await api.get(
         `/vehicle/default-values-by-vin?vin=${vin}&zip=${zip}`
@@ -46,6 +49,37 @@ export const fetchCityStateByZip = createAsyncThunk(
     } catch (error) {
       console.log('City/State API error:', error.response?.data || error.message);
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch location data');
+    }
+  }
+);
+
+// Async thunk for Instant Cash Offer API
+export const getInstantCashOffer = createAsyncThunk(
+  'carDetailsAndQuestions/getInstantCashOffer',
+  async (offerData, { rejectWithValue }) => {
+    try {
+      console.log('Submitting instant cash offer request:', JSON.stringify(offerData, null, 2));
+      const response = await api.post('/offer/instant-cash', offerData);
+      console.log('Instant Cash Offer API response:', response.data);
+      
+      if (response.data.success) {
+        return {
+          offerAmount: response.data.offer_amount,
+          carSummary: response.data.car_summary,
+          isAuctionable: response.data.is_auctionable,
+          productId: response.data.product_id,
+          emailSent: response.data.email_sent,
+          timestamp: response.data.timestamp
+        };
+      } else {
+        console.log('API returned success: false, message:', response.data.message);
+        return rejectWithValue(response.data.message || 'Failed to get instant cash offer');
+      }
+    } catch (error) {
+      console.log('Instant Cash Offer API error:', error.response?.data || error.message);
+      console.log('Error status:', error.response?.status);
+      console.log('Error headers:', error.response?.headers);
+      return rejectWithValue(error.response?.data?.message || error.message || 'Failed to get instant cash offer');
     }
   }
 );
@@ -146,6 +180,7 @@ const initialQuestions = [
 const initialState = {
   vehicleDetails: {},
   stateZip: "",
+  stateVin: "",
   questions: initialQuestions,
   loading: false,
   error: null,
@@ -162,7 +197,18 @@ const initialState = {
     isLoading: false,
     error: null,
     successMessage: null
-  }
+  },
+  // Instant Cash Offer state
+  offer: {
+    offerAmount: null,
+    carSummary: null,
+    isAuctionable: null,
+    productId: null,
+    emailSent: null,
+    timestamp: null
+  },
+  offerStatus: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
+  offerError: null
 };
 
 // Create slice
@@ -177,6 +223,9 @@ const carDetailsAndQuestionsSlice = createSlice({
       clearVehicleDetails: (state) => {
         state.vehicleDetails = {};
         state.stateZip = "";
+      },
+      setStateVin: (state, action) => {
+        state.stateVin = action.payload;
       },
     updateQuestion: (state, action) => {
       const { key, answer, details } = action.payload;
@@ -253,6 +302,23 @@ const carDetailsAndQuestionsSlice = createSlice({
         successMessage: null
       };
     },
+    // Instant Cash Offer actions
+    clearOffer: (state) => {
+      state.offer = {
+        offerAmount: null,
+        carSummary: null,
+        isAuctionable: null,
+        productId: null,
+        emailSent: null,
+        timestamp: null
+      };
+      state.offerStatus = 'idle';
+      state.offerError = null;
+    },
+    setOfferError: (state, action) => {
+      state.offerError = action.payload;
+      state.offerStatus = 'failed';
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -287,6 +353,20 @@ const carDetailsAndQuestionsSlice = createSlice({
           state: "",
           zipcode: ""
         };
+      })
+      // Instant Cash Offer reducers
+      .addCase(getInstantCashOffer.pending, (state) => {
+        state.offerStatus = 'loading';
+        state.offerError = null;
+      })
+      .addCase(getInstantCashOffer.fulfilled, (state, action) => {
+        state.offerStatus = 'succeeded';
+        state.offer = action.payload;
+        state.offerError = null;
+      })
+      .addCase(getInstantCashOffer.rejected, (state, action) => {
+        state.offerStatus = 'failed';
+        state.offerError = action.payload;
       });
   },
 });
@@ -303,7 +383,10 @@ export const {
   setModalLoading,
   setModalError,
   setModalSuccess,
-  resetModalState
+  resetModalState,
+  clearOffer,
+  setOfferError,
+  setStateVin
 } = carDetailsAndQuestionsSlice.actions;
 
 // Export reducer

@@ -5,11 +5,11 @@ import AuctionSelectionModal from "@/components/ui/auction-selection-modal";
 import { useDispatch, useSelector } from "react-redux";
 import LoginModal from "@/components/ui/LoginModal";
 import { setLoginRedirect } from "@/redux/slices/userSlice"; // Adjust import path
-import { updateQuestion, resetQuestions } from "@/redux/slices/carDetailsAndQuestionsSlice"; // Adjust import path
+import { updateQuestion, resetQuestions, getInstantCashOffer, clearOffer, setOfferError } from "@/redux/slices/carDetailsAndQuestionsSlice"; // Adjust import path
 
 export default function ConditionAssessment() {
   const dispatch = useDispatch();
-  const { questions, vehicleDetails, stateZip } = useSelector((state) => state.carDetailsAndQuestions);
+  const { questions, vehicleDetails, stateZip, offer, offerStatus, offerError } = useSelector((state) => state.carDetailsAndQuestions);
   const userState = useSelector((state) => state.user.user);
 
   // Initialize questions if invalid
@@ -53,6 +53,7 @@ export default function ConditionAssessment() {
     city: "",
   });
   const [userErrors, setUserErrors] = useState({});
+  const [isSubmittingOffer, setIsSubmittingOffer] = useState(false);
 
   const userExists = useSelector((state) => state?.user?.user);
 
@@ -89,6 +90,118 @@ export default function ConditionAssessment() {
       answer: q.answer || null,
       details: q.details || null,
     })) : [];
+  }
+
+  // Build the API request payload for Instant Cash Offer
+  function buildOfferPayload(userData, vehicleData, conditionData) {
+    console.log('Vehicle data received:', vehicleData);
+    console.log('User data received:', userData);
+    
+    // Map condition questions to the API format
+    const conditionAssessment = conditionData.map(q => ({
+      question_key: q.key,
+      question_text: q.label,
+      answer: q.answer,
+      details: q.details
+    }));
+
+    // Build question deductions (you may need to adjust this based on your business logic)
+    const questionDeductions = {};
+    conditionData.forEach(q => {
+      if (q.key === 'cosmetic') {
+        questionDeductions.cosmetic_condition = {
+          'Excellent': 0,
+          'Good': 100,
+          'Fair': 300,
+          'Poor': 500
+        };
+      } else if (q.key === 'smoked') {
+        questionDeductions.smoked_windows = {
+          'No': 0,
+          'Yes': 200
+        };
+      }
+      // Add more deduction mappings as needed
+    });
+
+    // Map vehicle data to the correct API format
+    // Try multiple possible field names from different API responses
+    const vehiclePayload = {
+      mileage_km: parseInt(vehicleData.mileage || vehicleData.mileage_km || vehicleData.odometer || 0),
+      exterior_color: vehicleData.exterior_color || vehicleData.color || vehicleData.exteriorColor || "Unknown",
+      interior_color: vehicleData.interior_color || vehicleData.interiorColor || "Unknown", 
+      body_type: vehicleData.body_type || vehicleData.bodyType || vehicleData.body_style || "Unknown",
+      transmission: vehicleData.transmission || vehicleData.transmission_type || "Unknown",
+      engine_type: vehicleData.engine_type || vehicleData.engineType || vehicleData.engine || "Unknown",
+      powertrain_description: vehicleData.powertrain_description || vehicleData.powertrainDescription || vehicleData.drivetrain || "Unknown",
+      vin: vehicleData.vin || vehicleData.vin_number || "",
+      zip_code: userData.zipcode || ""
+    };
+
+    // If vehicleDetails is empty or missing critical data, we need to handle this
+    if (!vehicleData || Object.keys(vehicleData).length === 0) {
+      throw new Error('Vehicle details are required. Please complete the vehicle information first.');
+    }
+
+    // Validate required fields
+    if (!vehiclePayload.vin) {
+      throw new Error('VIN is required for instant cash offer');
+    }
+    if (!vehiclePayload.zip_code) {
+      throw new Error('ZIP code is required for instant cash offer');
+    }
+    if (vehiclePayload.mileage_km <= 0) {
+      throw new Error('Valid mileage is required for instant cash offer');
+    }
+
+    console.log('Vehicle payload being sent:', vehiclePayload);
+
+    return {
+      vehicle: vehiclePayload,
+      condition_assessment: conditionAssessment,
+      question_deductions: questionDeductions,
+      user_info: {
+        full_name: userData.fullName || "",
+        email: userData.email || "",
+        phone: userData.phone || "",
+        city: userData.city || "",
+        state: userData.state || "",
+        zip_code: userData.zipcode || ""
+      }
+    };
+  }
+
+  // Handle Instant Cash Offer submission
+  async function handleInstantCashOffer(userData) {
+    try {
+      setIsSubmittingOffer(true);
+      dispatch(clearOffer()); // Clear any previous offer data
+
+      // Check if vehicle details exist
+      if (!vehicleDetails || Object.keys(vehicleDetails).length === 0) {
+        throw new Error('Vehicle details are required. Please complete the VIN lookup first.');
+      }
+
+      const conditionData = getFinalSubmissionData();
+      const offerPayload = buildOfferPayload(userData, vehicleDetails, conditionData);
+
+      console.log('Submitting Instant Cash Offer with payload:', offerPayload);
+
+      const result = await dispatch(getInstantCashOffer(offerPayload)).unwrap();
+      
+      console.log('Instant Cash Offer successful:', result);
+      
+      // On success, you can redirect to a review page or show the offer
+      // For now, we'll just log the success
+      alert(`Instant Cash Offer: $${result.offerAmount}`);
+      
+    } catch (error) {
+      console.error('Instant Cash Offer failed:', error);
+      const errorMessage = error.message || error || 'Failed to get instant cash offer. Please try again.';
+      dispatch(setOfferError(errorMessage));
+    } finally {
+      setIsSubmittingOffer(false);
+    }
   }
 
   const handleForgotPassword = () => {
@@ -514,6 +627,21 @@ export default function ConditionAssessment() {
                     <ChevronLeft className="h-4 w-4" /> Back
                   </button>
 
+                  {/* Vehicle details missing warning */}
+                  {(!vehicleDetails || Object.keys(vehicleDetails).length === 0) && (
+                    <div className="flex-1 mx-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                      <p className="text-sm text-yellow-800 mb-2">
+                        <strong>Vehicle details required:</strong> Please complete the VIN lookup first to get an instant cash offer.
+                      </p>
+                      <button
+                        onClick={() => setShowAuctionModal(true)}
+                        className="text-sm text-yellow-700 underline hover:text-yellow-900"
+                      >
+                        Start VIN Lookup →
+                      </button>
+                    </div>
+                  )}
+
                   {userExists ? (
                     <button
                       onClick={() => {
@@ -538,12 +666,26 @@ export default function ConditionAssessment() {
                         const data = getFinalSubmissionData();
 
                         if (Object.keys(errs).length === 0) {
-                          setShowAuctionModal(true);
+                          handleInstantCashOffer(finalUserData);
                         }
                       }}
-                      className="cursor-pointer inline-flex h-11 items-center justify-center rounded-xl bg-gradient-to-r from-[#f6851f] to-[#e63946] px-6 text-sm font-semibold text-white shadow-lg shadow-orange-500/25 transition hover:scale-[1.01]"
+                      disabled={isSubmittingOffer || offerStatus === 'loading' || !vehicleDetails || Object.keys(vehicleDetails).length === 0}
+                      className={`cursor-pointer inline-flex h-11 items-center justify-center rounded-xl bg-gradient-to-r from-[#f6851f] to-[#e63946] px-6 text-sm font-semibold text-white shadow-lg shadow-orange-500/25 transition hover:scale-[1.01] ${
+                        isSubmittingOffer || offerStatus === 'loading' || !vehicleDetails || Object.keys(vehicleDetails).length === 0
+                          ? 'opacity-50 cursor-not-allowed' 
+                          : ''
+                      }`}
                     >
-                      Submit
+                      {isSubmittingOffer || offerStatus === 'loading' ? (
+                        <div className="flex items-center gap-2">
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                          Getting Offer...
+                        </div>
+                      ) : (!vehicleDetails || Object.keys(vehicleDetails).length === 0) ? (
+                        'VIN Required'
+                      ) : (
+                        'Submit'
+                      )}
                     </button>
                   ) : (
                     <button
@@ -553,12 +695,53 @@ export default function ConditionAssessment() {
                       Login
                     </button>
                   )}
+                  
+                  {/* Success display for offer */}
+                  {offerStatus === 'succeeded' && offer.offerAmount && (
+                    <div className="mt-3 p-4 bg-green-50 border border-green-200 rounded-lg">
+                      <div className="flex items-center gap-2 mb-2">
+                        <CheckCircle2 className="w-5 h-5 text-green-600" />
+                        <h3 className="text-lg font-semibold text-green-800">Instant Cash Offer Received!</h3>
+                      </div>
+                      <p className="text-2xl font-bold text-green-700 mb-2">${offer.offerAmount}</p>
+                      <p className="text-sm text-green-600 mb-3">
+                        {offer.carSummary?.make} {offer.carSummary?.model} {offer.carSummary?.modelyear}
+                      </p>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => setShowAuctionModal(true)}
+                          className="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700"
+                        >
+                          View Details
+                        </button>
+                        <button
+                          onClick={() => dispatch(clearOffer())}
+                          className="px-4 py-2 border border-green-300 text-green-700 text-sm font-medium rounded-lg hover:bg-green-50"
+                        >
+                          Dismiss
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Error display for offer submission */}
+                  {offerError && (
+                    <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+                      <p className="text-sm text-red-600">{offerError}</p>
+                      <button
+                        onClick={() => dispatch(clearOffer())}
+                        className="mt-2 text-xs text-red-500 hover:text-red-700 underline"
+                      >
+                        Dismiss
+                      </button>
+                    </div>
+                  )}
                 </div>
               </motion.div>
             )}
           </div>
 
-          <div className="lg:col-span-4">
+          <div className="lg:col-span-4 ">
             <div className="sticky top-6 space-y-6">
               <div className="rounded-2xl border border-white/60 bg-white/70 p-6 shadow-xl backdrop-blur-xl">
                 <div className="mb-3 flex items-center justify-between">
@@ -573,7 +756,7 @@ export default function ConditionAssessment() {
                       key={q.key}
                       className="rounded-xl border border-slate-200 bg-white px-3 py-2 flex flex-col"
                     >
-                      <div className="flex items-center justify-between text-sm gap-2">
+                      <div className=" flex items-center justify-between text-sm gap-2">
                         <div className="flex items-center gap-2 min-w-0">
                           <span>{q.emoji || '❓'}</span>
                           <span className="truncate min-w-0">{q.label}</span>

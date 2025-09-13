@@ -17,7 +17,8 @@ import {
   setModalLoading,
   setModalError,
   setModalSuccess,
-  resetModalState
+  resetModalState,
+  setStateVin
 } from "@/redux/slices/carDetailsAndQuestionsSlice"
 import { useNavigate } from "react-router-dom"
 
@@ -186,11 +187,12 @@ export default function AuctionModal({
         // Registration successful, store vehicle data in vehicle slice
         dispatch(setVehicleDetails(resultAction.payload));
         dispatch(setModalSuccess("Registration successful! Redirecting to auction page..."));
-        
+        dispatch(setStateVin(vin))
         // Navigate after a short delay to show success message
         setTimeout(() => {
           navigate('/auction-page');
         }, 1500);
+
       } else {
         // Handle API error
         const errorMessage = resultAction.payload || 'Registration failed. Please try again.';

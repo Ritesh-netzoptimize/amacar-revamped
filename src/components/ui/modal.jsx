@@ -10,7 +10,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { useDispatch } from "react-redux";
-import { fetchVehicleDetails, setZipState } from "@/redux/slices/carDetailsAndQuestionsSlice";
+import { fetchVehicleDetails, setStateVin, setZipState } from "@/redux/slices/carDetailsAndQuestionsSlice";
 
 export default function Modal({
   isOpen,
@@ -73,6 +73,7 @@ export default function Modal({
       fetchVehicleDetails({vin, zip})
     );
     dispatch(setZipState(zip))
+    dispatch(setStateVin(vin))
 
     clearInterval(progressInterval); // stop the progress immediately
 

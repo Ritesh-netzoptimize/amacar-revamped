@@ -79,7 +79,8 @@ export default function Modal({
 
     if (fetchVehicleDetails.fulfilled.match(resultAction)) {
       setStepIndex(steps.length); // complete the bar
-      setPhase("success");
+      // setPhase("success");
+      navigate("/auction-page");
     } else {
       setPhase("error");
     }

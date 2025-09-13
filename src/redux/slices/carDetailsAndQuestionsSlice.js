@@ -163,7 +163,7 @@ const initialQuestions = [
   },
   {
     key: 'tread',
-    label: 'Tread condition?',
+    label: 'Tire condition?',
     emoji: '🛞',
     options: ['New', 'Good', 'Fair', 'Replace'],
     positive: ['New', 'Good'],
@@ -223,7 +223,7 @@ const carDetailsAndQuestionsSlice = createSlice({
         ...state.vehicleDetails,
         ...newDetails,
         // Ensure these fields are included, using provided values or empty strings
-        mileage: newDetails.mileage || state.vehicleDetails.mileage || '',
+        mileage: newDetails.mileage || '',
         exteriorColor: newDetails.exteriorColor || state.vehicleDetails.exteriorColor || '',
         interiorColor: newDetails.interiorColor || state.vehicleDetails.interiorColor || '',
         bodyType: newDetails.bodytype || newDetails.body || state.vehicleDetails.bodyType || '',

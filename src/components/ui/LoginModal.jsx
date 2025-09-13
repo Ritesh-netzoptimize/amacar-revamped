@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Loader2, CheckCircle2, Mail, Lock, Eye, EyeOff, ShieldCheck, Sparkles, User, XCircle } from "lucide-react";
+import { Loader2, CheckCircle2, Mail, Lock, Eye, EyeOff, ShieldCheck, Sparkles, User, XCircle, Phone } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -40,7 +40,7 @@ export default function LoginModal({
   const navigate = useNavigate();
   const isCloseDisabled = phase === "loading" || phase === "verify-otp";
   function validate() {
-    const newErrors = { email: "", firstName: "", lastName: "", password: "", confirmPassword: "", otp: "", newPassword: "" };
+    const newErrors = { email: "", firstName: "", lastName: "", phone: "", password: "", confirmPassword: "", otp: "", newPassword: "" };
   
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!values.email) {
@@ -59,6 +59,12 @@ export default function LoginModal({
       newErrors.lastName = "Last name is required";
     } else if (isRegisterMode && values.lastName?.length < 2) {
       newErrors.lastName = "Last name must be at least 2 characters";
+    }
+
+    if (isRegisterMode && !values.phone) {
+      newErrors.phone = "Phone number is required";
+    } else if (isRegisterMode && values.phone && !/^[\+]?[1-9][\d]{0,15}$/.test(values.phone.replace(/\s/g, ""))) {
+      newErrors.phone = "Please enter a valid phone number";
     }
   
     if ((isRegisterMode || !isForgotPasswordMode) && !values.password) {
@@ -114,7 +120,7 @@ export default function LoginModal({
     if (!validate()) return;
 
     if (isRegisterMode) {
-      await handleAction(registerUser, { email: values.email, username: values.username, password: values.password });
+      await handleAction(registerUser, { email: values.email, username: values.username, phone: values.phone, firstName: values.firstName, lastName: values.lastName, password: values.password, confirmPassword: values.confirmPassword });
     } else if (isForgotPasswordMode && phase === "forgot") {
       await handleAction(forgotPassword, values.email);
       if (phase !== "failed") {
@@ -226,7 +232,7 @@ export default function LoginModal({
     <>
       <Dialog open={isOpen} onOpenChange={isCloseDisabled ? undefined : handleModalClose}>
         <DialogContent
-          className="sm:max-w-md rounded-2xl shadow-xl p-0 overflow-hidden bg-white"
+          className="sm:max-w-lg rounded-2xl shadow-xl p-0 overflow-hidden bg-white"
           showCloseButton={!isCloseDisabled}
         >
           <div className="bg-gradient-to-br from-white via-slate-50 to-slate-100 p-6">
@@ -256,7 +262,7 @@ export default function LoginModal({
             </DialogHeader>
           </div>
 
-          <div className="p-6 pt-0 min-h-[420px]">
+          <div className={`p-6 pt-0 ${isRegisterMode ? 'min-h-[480px]' : 'min-h-[420px]'}`}>
             <AnimatePresence mode="wait">
               {(phase === "form" || phase === "forgot" || phase === "reset-password") && (
                 <motion.form
@@ -266,7 +272,7 @@ export default function LoginModal({
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -8 }}
                   transition={{ duration: 0.25, ease: "easeOut" }}
-                  className="grid gap-5"
+                  className={`grid ${isRegisterMode ? 'gap-4' : 'gap-5'}`}
                 >
                   {/* Email Field */}
                   {(phase === "form" || phase === "forgot") && (
@@ -299,99 +305,132 @@ export default function LoginModal({
                     </div>
                   )}
 
-                  {/* Username Field (Register Mode Only) */}
+                  {/* Registration Fields (Compact Layout) */}
                   {isRegisterMode && phase === "form" && (
-                    <div className="grid gap-2">
-                      <label htmlFor="username" className="text-sm font-medium text-slate-800">
-                        Username
-                      </label>
-                      <div className="relative">
-                        <div className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
-                          <User className="h-4 w-4" />
+                    <div className="space-y-3">
+                      {/* Top Row: Username and Phone */}
+                      <div className="grid grid-cols-2 gap-3">
+                        {/* Username Field */}
+                        <div className="grid gap-2">
+                          <label htmlFor="username" className="text-sm font-medium text-slate-800">
+                            Username
+                          </label>
+                          <div className="relative">
+                            <div className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                              <User className="h-4 w-4" />
+                            </div>
+                            <input
+                              id="username"
+                              type="text"
+                              value={values.username || ""}
+                              onChange={(e) => setValue("username", e.target.value)}
+                              placeholder="Username"
+                              className="h-10 w-full rounded-xl border border-slate-200 bg-white pl-9 pr-3 text-sm outline-none ring-0 transition-shadow focus:shadow-[0_0_0_4px_rgba(15,23,42,0.08)]"
+                            />
+                          </div>
+                          {errors.username && (
+                            <motion.p
+                              initial={{ opacity: 0, y: -4 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              className="text-xs text-red-600"
+                            >
+                              {errors.username}
+                            </motion.p>
+                          )}
                         </div>
-                        <input
-                          id="username"
-                          type="text"
-                          value={values.username || ""}
-                          onChange={(e) => setValue("username", e.target.value)}
-                          placeholder="Your username"
-                          className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-9 pr-3 text-sm outline-none ring-0 transition-shadow focus:shadow-[0_0_0_4px_rgba(15,23,42,0.08)]"
-                        />
+
+                        {/* Phone Field */}
+                        <div className="grid gap-2">
+                          <label htmlFor="phone" className="text-sm font-medium text-slate-800">
+                            Phone
+                          </label>
+                          <div className="relative">
+                            <div className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                              <Phone className="h-4 w-4" />
+                            </div>
+                            <input
+                              id="phone"
+                              type="tel"
+                              value={values.phone || ""}
+                              onChange={(e) => setValue("phone", e.target.value)}
+                              placeholder="+1 (555) 123-4567"
+                              className="h-10 w-full rounded-xl border border-slate-200 bg-white pl-9 pr-3 text-sm outline-none ring-0 transition-shadow focus:shadow-[0_0_0_4px_rgba(15,23,42,0.08)]"
+                            />
+                          </div>
+                          {errors.phone && (
+                            <motion.p
+                              initial={{ opacity: 0, y: -4 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              className="text-xs text-red-600"
+                            >
+                              {errors.phone}
+                            </motion.p>
+                          )}
+                        </div>
                       </div>
-                      {errors.username && (
-                        <motion.p
-                          initial={{ opacity: 0, y: -4 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          className="text-xs text-red-600"
-                        >
-                          {errors.username}
-                        </motion.p>
-                      )}
+
+                      {/* Middle Row: First Name and Last Name */}
+                      <div className="grid grid-cols-2 gap-3">
+                        {/* First Name Field */}
+                        <div className="grid gap-2">
+                          <label htmlFor="firstName" className="text-sm font-medium text-slate-800">
+                            First Name
+                          </label>
+                          <div className="relative">
+                            <div className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                              <User className="h-4 w-4" />
+                            </div>
+                            <input
+                              id="firstName"
+                              type="text"
+                              value={values.firstName || ""}
+                              onChange={(e) => setValue("firstName", e.target.value)}
+                              placeholder="First name"
+                              className="h-10 w-full rounded-xl border border-slate-200 bg-white pl-9 pr-3 text-sm outline-none ring-0 transition-shadow focus:shadow-[0_0_0_4px_rgba(15,23,42,0.08)]"
+                            />
+                          </div>
+                          {errors.firstName && (
+                            <motion.p
+                              initial={{ opacity: 0, y: -4 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              className="text-xs text-red-600"
+                            >
+                              {errors.firstName}
+                            </motion.p>
+                          )}
+                        </div>
+
+                        {/* Last Name Field */}
+                        <div className="grid gap-2">
+                          <label htmlFor="lastName" className="text-sm font-medium text-slate-800">
+                            Last Name
+                          </label>
+                          <div className="relative">
+                            <div className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                              <User className="h-4 w-4" />
+                            </div>
+                            <input
+                              id="lastName"
+                              type="text"
+                              value={values.lastName || ""}
+                              onChange={(e) => setValue("lastName", e.target.value)}
+                              placeholder="Last name"
+                              className="h-10 w-full rounded-xl border border-slate-200 bg-white pl-9 pr-3 text-sm outline-none ring-0 transition-shadow focus:shadow-[0_0_0_4px_rgba(15,23,42,0.08)]"
+                            />
+                          </div>
+                          {errors.lastName && (
+                            <motion.p
+                              initial={{ opacity: 0, y: -4 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              className="text-xs text-red-600"
+                            >
+                              {errors.lastName}
+                            </motion.p>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   )}
-
-          {
-            isRegisterMode &&
-            <div className="grid grid-cols-2 gap-4">
-            {/* First Name Field */}
-            <div className="grid gap-2">
-              <label htmlFor="firstName" className="text-sm font-medium text-slate-800">
-                First Name
-              </label>
-              <div className="relative">
-                <div className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
-                  <User className="h-4 w-4" />
-                </div>
-                <input
-                  id="firstName"
-                  type="text"
-                  value={values.firstName || ""}
-                  onChange={(e) => setValue("firstName", e.target.value)}
-                  placeholder="Your first name"
-                  className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-9 pr-3 text-sm outline-none ring-0 transition-shadow focus:shadow-[0_0_0_4px_rgba(15,23,42,0.08)]"
-                />
-              </div>
-              {errors.firstName && (
-                <motion.p
-                  initial={{ opacity: 0, y: -4 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="text-xs text-red-600"
-                >
-                  {errors.firstName}
-                </motion.p>
-              )}
-            </div>
-
-            {/* Last Name Field */}
-            <div className="grid gap-2">
-              <label htmlFor="lastName" className="text-sm font-medium text-slate-800">
-                Last Name
-              </label>
-              <div className="relative">
-                <div className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
-                  <User className="h-4 w-4" />
-                </div>
-                <input
-                  id="lastName"
-                  type="text"
-                  value={values.lastName || ""}
-                  onChange={(e) => setValue("lastName", e.target.value)}
-                  placeholder="Your last name"
-                  className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-9 pr-3 text-sm outline-none ring-0 transition-shadow focus:shadow-[0_0_0_4px_rgba(15,23,42,0.08)]"
-                />
-              </div>
-              {errors.lastName && (
-                <motion.p
-                  initial={{ opacity: 0, y: -4 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="text-xs text-red-600"
-                >
-                  {errors.lastName}
-                </motion.p>
-              )}
-            </div>
-          </div>
-          }
 
                   {/* Password Field (Login/Register Mode) */}
                   {phase === "form" && !isForgotPasswordMode && (
@@ -409,7 +448,7 @@ export default function LoginModal({
                           value={values.password || ""}
                           onChange={(e) => setValue("password", e.target.value)}
                           placeholder="••••••••"
-                          className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-9 pr-10 text-sm outline-none ring-0 transition-shadow focus:shadow-[0_0_0_4px_rgba(15,23,42,0.08)]"
+                          className={`h-10 w-full rounded-xl border border-slate-200 bg-white pl-9 pr-10 text-sm outline-none ring-0 transition-shadow focus:shadow-[0_0_0_4px_rgba(15,23,42,0.08)]`}
                         />
                         <button
                           type="button"
@@ -485,7 +524,7 @@ export default function LoginModal({
                           value={values.confirmPassword || ""}
                           onChange={(e) => setValue("confirmPassword", e.target.value)}
                           placeholder="••••••••"
-                          className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-9 pr-10 text-sm outline-none ring-0 transition-shadow focus:shadow-[0_0_0_4px_rgba(15,23,42,0.08)]"
+                          className={`h-10 w-full rounded-xl border border-slate-200 bg-white pl-9 pr-10 text-sm outline-none ring-0 transition-shadow focus:shadow-[0_0_0_4px_rgba(15,23,42,0.08)]`}
                         />
                         <button
                           type="button"

@@ -6,11 +6,11 @@ import AuctionSelectionModal from "@/components/ui/auction-selection-modal";
 import { useDispatch, useSelector } from "react-redux";
 import LoginModal from "@/components/ui/LoginModal";
 import { setLoginRedirect } from "@/redux/slices/userSlice"; // Adjust import path
-import { updateQuestion, resetQuestions, getInstantCashOffer, clearOffer, setOfferError } from "@/redux/slices/carDetailsAndQuestionsSlice"; // Adjust import path
+import { updateQuestion, resetQuestions } from "@/redux/slices/carDetailsAndQuestionsSlice"; // Adjust import path
 
 export default function ConditionAssessment() {
   const dispatch = useDispatch();
-  const { questions, vehicleDetails, stateZip, offer, offerStatus, offerError, stateVin, location } = useSelector((state) => state.carDetailsAndQuestions);
+  const { questions, vehicleDetails, stateZip, stateVin, location } = useSelector((state) => state.carDetailsAndQuestions);
   const userState = useSelector((state) => state.user.user);
 
   // Initialize questions if invalid
@@ -50,7 +50,6 @@ export default function ConditionAssessment() {
     city: "",
   });
   const [userErrors, setUserErrors] = useState({});
-  const [isSubmittingOffer, setIsSubmittingOffer] = useState(false);
 
   const userExists = useSelector((state) => state?.user?.user);
 
@@ -89,128 +88,17 @@ export default function ConditionAssessment() {
     })) : [];
   }
 
-  // Build the API request payload for Instant Cash Offer
-  function buildOfferPayload(userData, vehicleData, conditionData) {
-    console.log('Vehicle data received:', vehicleData);
-    console.log('User data received:', userData);
-    
-    // Map condition questions to the API format
-    const conditionAssessment = conditionData.map(q => ({
-      question_key: q.key,
-      question_text: q.label,
-      answer: q.answer,
-      details: q.details
-    }));
-
-    // Build question deductions (you may need to adjust this based on your business logic)
-    const questionDeductions = {};
-    conditionData.forEach(q => {
-      if (q.key === 'cosmetic') {
-        questionDeductions.cosmetic_condition = {
-          'Excellent': 0,
-          'Good': 100,
-          'Fair': 300,
-          'Poor': 500
-        };
-      } else if (q.key === 'smoked') {
-        questionDeductions.smoked_windows = {
-          'No': 0,
-          'Yes': 200
-        };
-      }
-      // Add more deduction mappings as needed
-    });
-
-    // Map vehicle data to the correct API format
-    // Try multiple possible field names from different API responses
-    const vehiclePayload = {
-      mileage_km: parseInt(vehicleData.mileage || vehicleData.mileage_km || vehicleData.odometer || 0),
-      exterior_color: vehicleData.exterior_color || vehicleData.color || vehicleData.exteriorColor || "Unknown",
-      interior_color: vehicleData.interior_color || vehicleData.interiorColor || "Unknown", 
-      body_type: vehicleData.body_type || vehicleData.bodyType || vehicleData.body_style || "Unknown",
-      transmission: vehicleData.transmission || vehicleData.transmission_type || "Unknown",
-      engine_type: vehicleData.engine_type || vehicleData.engineType || vehicleData.engine || "Unknown",
-      powertrain_description: vehicleData.powertrain_description || vehicleData.powertrainDescription || vehicleData.drivetrain || "Unknown",
-      vin: vehicleData.vin || vehicleData.vin_number || stateVin || "",
-      zip_code: userData.zipcode || ""
-    };
-
-    // If vehicleDetails is empty or missing critical data, we need to handle this
-    if (!vehicleData || Object.keys(vehicleData).length === 0) {
-      throw new Error('Vehicle details are required. Please complete the vehicle information first.');
-    }
-
-    // Validate required fields
-    if (!vehiclePayload.vin) {
-      throw new Error('VIN is required for instant cash offer');
-    }
-    if (!vehiclePayload.zip_code) {
-      throw new Error('ZIP code is required for instant cash offer');
-    }
-    if (vehiclePayload.mileage_km <= 0) {
-      throw new Error('Valid mileage is required for instant cash offer');
-    }
-
-    console.log('Vehicle payload being sent:', vehiclePayload);
-
-    return {
-      vehicle: vehiclePayload,
-      condition_assessment: conditionAssessment,
-      question_deductions: questionDeductions,
-      user_info: {
-        full_name: userData.fullName || "",
-        email: userData.email || "",
-        phone: userData.phone || "",
-        city: userData.city || "",
-        state: userData.state || "",
-        zip_code: userData.zipcode || ""
-      }
-    };
-  }
-
-
-async function handleInstantCashOffer(userData) {
-  try {
-    setIsSubmittingOffer(true);
-    dispatch(clearOffer()); // Clear any previous offer data
-
+  // Simple function to open auction modal
+  function handleSubmitToAuction() {
     // Check if vehicle details exist
     if (!vehicleDetails || Object.keys(vehicleDetails).length === 0) {
-      throw new Error("Vehicle details are required. Please complete the VIN lookup first.");
+      toast.error("Vehicle details are required. Please complete the VIN lookup first.");
+      return;
     }
 
-    const conditionData = getFinalSubmissionData();
-    const offerPayload = buildOfferPayload(userData, vehicleDetails, conditionData);
-
-    console.log("Submitting Instant Cash Offer with payload:", offerPayload);
-
-    const result = await dispatch(getInstantCashOffer(offerPayload)).unwrap();
-
-    console.log("Instant Cash Offer successful:", result);
-
-    // ✅ Success state
-    toast.success(`Instant Cash Offer received!`);
-
-    // Open modal only if successful
+    // Open auction selection modal
     setShowAuctionModal(true);
-
-  } catch (error) {
-    console.error("Instant Cash Offer failed:", error);
-
-    const errorMessage =
-      error.message || error || "Failed to get instant cash offer. Please try again.";
-
-    dispatch(setOfferError(errorMessage));
-
-    // ❌ Error state (no modal, just toast)
-    toast.error(errorMessage, {
-      position: "top-right",
-      autoClose: 3000,
-    });
-  } finally {
-    setIsSubmittingOffer(false);
   }
-}
 
 
   const handleForgotPassword = () => {
@@ -675,25 +563,20 @@ async function handleInstantCashOffer(userData) {
                         const data = getFinalSubmissionData();
 
                         if (Object.keys(errs).length === 0) {
-                          handleInstantCashOffer(finalUserData);
+                          handleSubmitToAuction();
                         }
                       }}
-                      disabled={isSubmittingOffer || offerStatus === 'loading' || !vehicleDetails || Object.keys(vehicleDetails).length === 0}
+                      disabled={!vehicleDetails || Object.keys(vehicleDetails).length === 0}
                       className={`cursor-pointer inline-flex h-11 items-center justify-center rounded-xl bg-gradient-to-r from-[#f6851f] to-[#e63946] px-6 text-sm font-semibold text-white shadow-lg shadow-orange-500/25 transition hover:scale-[1.01] ${
-                        isSubmittingOffer || offerStatus === 'loading' || !vehicleDetails || Object.keys(vehicleDetails).length === 0
+                        !vehicleDetails || Object.keys(vehicleDetails).length === 0
                           ? 'opacity-50 cursor-not-allowed' 
                           : ''
                       }`}
                     >
-                      {isSubmittingOffer || offerStatus === 'loading' ? (
-                        <div className="flex items-center gap-2">
-                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                          Getting Offer...
-                        </div>
-                      ) : (!vehicleDetails || Object.keys(vehicleDetails).length === 0) ? (
+                      {(!vehicleDetails || Object.keys(vehicleDetails).length === 0) ? (
                         'VIN Required'
                       ) : (
-                        'Submit'
+                        'Continue to Auction'
                       )}
                     </button>
                   ) : (
@@ -733,18 +616,6 @@ async function handleInstantCashOffer(userData) {
                     </div>
                   )} */}
 
-                  {/* Error display for offer submission */}
-                  {offerError && (
-                    <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
-                      <p className="text-sm text-red-600">{offerError}</p>
-                      <button
-                        onClick={() => dispatch(clearOffer())}
-                        className="mt-2 text-xs text-red-500 hover:text-red-700 underline"
-                      >
-                        Dismiss
-                      </button>
-                    </div>
-                  )}
                 </div>
               </motion.div>
             )}

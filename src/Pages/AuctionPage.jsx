@@ -16,12 +16,14 @@ import { fetchVehicleDetails, setVehicleDetails } from "../redux/slices/carDetai
 export default function AuctionPage() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { vehicleDetails, loading, error } = useSelector((state) => state.carDetailsAndQuestions);
+  const { vehicleDetails, loading, error, stateVin, stateZip } = useSelector((state) => state.carDetailsAndQuestions);
 
   // Fetch vehicle details if not already loaded
   useEffect(() => {
     if (!vehicleDetails || Object.keys(vehicleDetails).length === 0) {
       dispatch(fetchVehicleDetails({ vin: "JTHBL46FX75021954", zip: "80226" }));
+
+      // dispatch(fetchVehicleDetails({ vin: stateVin, zip: stateZip }));
     }
   }, [dispatch, vehicleDetails]);
 useEffect(() => {
@@ -564,6 +566,67 @@ useEffect(() => {
           {/* Right: Live Preview / Summary panel */}
           <div className="lg:col-span-4">
             <div className="sticky top-6 space-y-6">
+              {/* Vehicle Information Card */}
+              <div className="rounded-2xl border border-white/60 bg-white/70 p-6 shadow-xl backdrop-blur-xl">
+                <div className="mb-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-lg font-semibold text-slate-900">Vehicle Information</h3>
+                    <div className="h-2 w-2 bg-orange-500 rounded-full"></div>
+                  </div>
+                  
+                  {/* VIN Badge */}
+                  <div className="mb-4">
+                    <div className="inline-flex items-center px-3 py-1.5 rounded-lg bg-gradient-to-r from-[#f6851f] to-[#e63946] text-white text-sm font-semibold">
+                      VIN- {vehicleDetails?.vin || "JTHBL46FX75021954"}
+                    </div>
+                  </div>
+
+                  {/* Vehicle Details */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-slate-700">Vehicle</span>
+                      <span className="text-sm font-semibold text-slate-900">
+                        {vehicleDetails?.modelyear || "2007"} {vehicleDetails?.make || "LEXUS"} {vehicleDetails?.model || "LS"}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-slate-700">Type</span>
+                      <span className="text-sm font-semibold text-[#f6851f]">
+                        {vehicleDetails?.bodytype || "SEDAN"} {vehicleDetails?.doors || "4D"} {vehicleDetails?.model || "LS460"} {vehicleDetails?.engineconfiguration || "4.6L"} {vehicleDetails?.fueltype || "V8"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Vehicle Image Placeholder */}
+                <div className="relative mb-3">
+                  <div className="w-full h-24 bg-gradient-to-br from-slate-100 to-slate-200 rounded-xl flex items-center justify-center border-2 border-dashed border-slate-300">
+                    <div className="text-center">
+                      <div className="flex items-center justify-center mb-1">
+                        <span className="text-xl font-bold text-[#f6851f]">amacar</span>
+                        <div className="ml-1 w-5 h-5 border-2 border-blue-500 rounded-full flex items-center justify-center">
+                          <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
+                        </div>
+                      </div>
+                      <p className="text-xs font-medium text-slate-600">No Image Available</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Additional Info */}
+                <div className="space-y-1.5 text-xs text-slate-500">
+                  <div className="flex justify-between">
+                    <span>Mileage:</span>
+                    <span className="font-medium">{values.mileage ? Number(values.mileage).toLocaleString() + ' km' : 'N/A'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Average:</span>
+                    <span className="font-medium">{vehicleDetails?.averagemileage ? Number(vehicleDetails.averagemileage) + ' km' : 'N/A'}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Live Preview Card */}
               <div className="rounded-2xl border border-white/60 bg-white/70 p-6 shadow-xl backdrop-blur-xl">
                 <div className="mb-4 flex items-center justify-between">
                   <div className="flex items-center gap-3">
